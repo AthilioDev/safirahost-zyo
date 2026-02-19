@@ -1,42 +1,61 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Base reset + dark theme como 171.wtf */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border: 0 solid #e5e7eb;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+body {
+  margin: 0;
+  background: #050505;
+  color: white;
+  min-height: 100vh;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Utilitários úteis extraídos/adaptados */
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-lg  { border-radius: 0.5rem; }
+.rounded-full { border-radius: 9999px; }
+
+.border { border-width: 1px; }
+.border-white\/10 { border-color: rgba(255,255,255,0.1); }
+.border-white\/20 { border-color: rgba(255,255,255,0.2); }
+.border-white\/5  { border-color: rgba(255,255,255,0.05); }
+
+.bg-surface       { background-color: #111; }
+.bg-muted         { background-color: #1a1a1a; }
+.bg-primary       { background-color: #f97316; } /* laranja 171 */
+.text-primary     { color: #f97316; }
+
+.text-muted-foreground { color: #9ca3af; }
+.hover\:bg-white\/10:hover { background-color: rgba(255,255,255,0.1); }
+.hover\:border-white\/30:hover { border-color: rgba(255,255,255,0.3); }
+
+.transition-all { transition: all 0.2s ease; }
+
+/* Glow / shadow estilo 171 */
+.shadow-glow-orange {
+  box-shadow: 0 0 25px rgba(249, 115, 22, 0.25);
 }
 
-.card {
-  padding: 2em;
+.shadow-glow-white {
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
 }
 
-.read-the-docs {
-  color: #888;
+/* Header fixo */
+header {
+  background: rgba(5,5,5,0.7);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }

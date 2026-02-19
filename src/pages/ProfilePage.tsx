@@ -62,6 +62,7 @@ const ProfilePage = () => {
         backgroundUrl: profileData.background_url || undefined,
         backgroundVideoUrl: profileData.background_video_url || undefined,
         songUrl: profileData.song_url || undefined,
+        cardBackgroundColor: profileData.card_background_color || "#8b5cf6", // <-- Cor de fundo do card (padrão roxo)
         links: (links || []).map((l) => ({ label: l.label, url: l.url, icon: l.icon || "website" })),
         badges: (userBadges || []).map((ub: any) => ({
           id: ub.badges.id,
@@ -79,7 +80,7 @@ const ProfilePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="h-8 w-8 border-2 border-[#f97316] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -87,11 +88,16 @@ const ProfilePage = () => {
   if (notFound || !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-          className="glass rounded-2xl p-8 text-center space-y-3 max-w-sm">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass rounded-2xl p-8 text-center space-y-3 max-w-sm"
+        >
           <p className="text-4xl">👻</p>
           <h2 className="text-xl font-bold">Usuário não encontrado</h2>
-          <p className="text-sm text-muted-foreground">Este perfil não existe ou foi removido.</p>
+          <p className="text-sm text-muted-foreground">
+            Este perfil não existe ou foi removido.
+          </p>
         </motion.div>
       </div>
     );
@@ -104,13 +110,19 @@ const ProfilePage = () => {
       {/* Background: video or image or default gradient */}
       {profile.backgroundVideoUrl ? (
         <video
-          autoPlay muted loop playsInline
+          autoPlay
+          muted
+          loop
+          playsInline
           className="absolute inset-0 w-full h-full object-cover z-0"
           src={profile.backgroundVideoUrl}
         />
       ) : profile.backgroundUrl ? (
-        <img src={profile.backgroundUrl} alt="Background"
-          className="absolute inset-0 w-full h-full object-cover z-0" />
+        <img
+          src={profile.backgroundUrl}
+          alt="Background"
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        />
       ) : (
         <div className="absolute inset-0 animated-gradient-bg z-0" />
       )}
@@ -120,9 +132,13 @@ const ProfilePage = () => {
         <div className="absolute inset-0 bg-background/40 backdrop-blur-sm z-[1]" />
       )}
 
-      {/* Card */}
+      {/* Card com fundo personalizado */}
       <div className="relative z-10 w-full max-w-2xl">
-        <ProfileCard profile={profile} isFullPage />
+        <ProfileCard 
+          profile={profile} 
+          isFullPage 
+          cardBackgroundColor={profile.cardBackgroundColor} // <-- Passando a cor de fundo pro componente
+        />
       </div>
     </div>
   );
