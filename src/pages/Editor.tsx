@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { ProfileCard, CARD_TEMPLATES } from "@/components/ProfileCard";
 import { EFFECT_OPTIONS } from "@/components/ProfileEffects";
 import { BadgeIcon } from "@/components/BadgeIcon";
@@ -12,7 +11,6 @@ import {
   LogOut,
   Upload,
   Camera,
-  Sparkles,
   Music,
   Image as LucideImage,
   Film,
@@ -23,14 +21,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const PRESET_COLORS = [
-  "#f97316", // Laranja brabo (padrão)
-  "#ec4899", // Rosa hot pink
-  "#8b5cf6", // Roxo vibrante
-  "#3b82f6", // Azul safira
-  "#10b981", // Verde esmeralda
-  "#ef4444", // Vermelho fogo
-  "#facc15", // Amarelo ouro
-  "#ffffff", // Branco puro
+  "#f97316",
+  "#ec4899",
+  "#8b5cf6",
+  "#3b82f6",
+  "#10b981",
+  "#ef4444",
+  "#facc15",
+  "#ffffff",
 ];
 
 const Editor = () => {
@@ -38,7 +36,9 @@ const Editor = () => {
   const navigate = useNavigate();
 
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<"profile" | "links" | "badges" | "style" | "integrations">("profile");
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "links" | "badges" | "style" | "advanced" | "integrations"
+  >("profile");
 
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
@@ -55,9 +55,9 @@ const Editor = () => {
   const [backgroundUrl, setBackgroundUrl] = useState("");
   const [backgroundVideoUrl, setBackgroundVideoUrl] = useState("");
   const [songUrl, setSongUrl] = useState("");
+  const [bannerBlur, setBannerBlur] = useState(0);
   const [links, setLinks] = useState<{ id?: string; label: string; url: string; icon: string }[]>([]);
 
-  // Apenas Discord por enquanto
   const [discordUserId, setDiscordUserId] = useState("");
 
   const [allBadges, setAllBadges] = useState<any[]>([]);
@@ -85,6 +85,7 @@ const Editor = () => {
       setBackgroundUrl((authProfile as any).background_url || "");
       setBackgroundVideoUrl((authProfile as any).background_video_url || "");
       setSongUrl((authProfile as any).song_url || "");
+      setBannerBlur((authProfile as any).banner_blur ?? 0);
       setDiscordUserId(authProfile.discord_user_id || "");
     }
   }, [authProfile]);
@@ -98,7 +99,10 @@ const Editor = () => {
       .eq("user_id", user.id)
       .order("sort_order")
       .then(({ data }) => {
-        if (data) setLinks(data.map((l) => ({ id: l.id, label: l.label, url: l.url, icon: l.icon || "website" })));
+        if (data)
+          setLinks(
+            data.map((l) => ({ id: l.id, label: l.label, url: l.url, icon: l.icon || "website" }))
+          );
       });
 
     supabase.from("badges").select("*").then(({ data }) => {
@@ -112,7 +116,9 @@ const Editor = () => {
       .then(({ data }) => {
         if (data) {
           setUserBadges(data);
-          setEquippedBadgeIds(new Set(data.filter((ub: any) => ub.equipped).map((ub: any) => ub.badge_id)));
+          setEquippedBadgeIds(
+            new Set(data.filter((ub: any) => ub.equipped).map((ub: any) => ub.badge_id))
+          );
         }
       });
   }, [user]);
@@ -174,6 +180,7 @@ const Editor = () => {
         background_url: backgroundUrl,
         background_video_url: backgroundVideoUrl,
         song_url: songUrl,
+        banner_blur: bannerBlur,
         discord_user_id: discordUserId.trim() || null,
       } as any)
       .eq("user_id", user.id);
@@ -245,283 +252,213 @@ const Editor = () => {
     backgroundUrl: backgroundUrl || undefined,
     backgroundVideoUrl: backgroundVideoUrl || undefined,
     songUrl: songUrl || undefined,
+    bannerBlur,
   };
 
   if (authLoading) return null;
 
   const tabs = [
-    { id: "profile", label: "Perfil" },
-    { id: "links", label: "Links" },
-    { id: "badges", label: "Badges" },
-    { id: "style", label: "Estilo" },
+    { id: "profile",      label: "Perfil" },
+    { id: "links",        label: "Links" },
+    { id: "badges",       label: "Badges" },
+    { id: "style",        label: "Estilo" },
+    { id: "advanced",     label: "Personalização Avançada" },
     { id: "integrations", label: "Integrações" },
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans">
-      <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between backdrop-blur-md bg-black/40 sticky top-0 z-50">
-        <Link to="/" className="flex items-center gap-3 group">
-          <Gem className="h-6 w-6 text-[#f97316] group-hover:scale-110 transition-transform" />
-          <span className="font-black text-xl tracking-tight bg-gradient-to-r from-[#f97316] to-[#fb923c] bg-clip-text text-transparent">
-            Safira
-          </span>
+    <div className="min-h-screen bg-[#050505] text-white font-mono">
+
+      {/* ── HEADER ── */}
+      <header className="border-b border-[#1a1a1a] px-6 py-3 flex items-center justify-between bg-[#080808] sticky top-0 z-50">
+        <Link to="/" className="flex items-center gap-2">
+          <Gem className="h-5 w-5 text-[#f97316]" />
+          <span className="font-black text-lg tracking-widest text-[#f97316] uppercase">Safira</span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             to={`/${username}`}
-            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-xs text-[#555] hover:text-[#999] transition-colors uppercase tracking-widest"
           >
-            <Eye className="h-4 w-4" />
+            <Eye className="h-3.5 w-3.5" />
             Preview
           </Link>
 
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#f97316] text-black font-bold hover:bg-[#fb923c] transition-all shadow-[0_0_25px_rgba(249,115,22,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-2 bg-[#f97316] text-black text-xs font-black uppercase tracking-widest hover:bg-[#e06210] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Save className="h-4 w-4" />
+            <Save className="h-3.5 w-3.5" />
             {saving ? "Salvando..." : "Salvar"}
           </button>
 
           <button
-            onClick={() => {
-              signOut();
-              navigate("/");
-            }}
-            className="p-2.5 rounded-full hover:bg-white/10 transition-colors"
+            onClick={() => { signOut(); navigate("/"); }}
+            className="p-2 hover:bg-[#111] transition-colors"
           >
-            <LogOut className="h-5 w-5 text-gray-400 hover:text-white" />
+            <LogOut className="h-4 w-4 text-[#444] hover:text-[#888]" />
           </button>
         </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-49px)]">
+
+        {/* ── LEFT PANEL ── */}
         <div className="flex-1 p-6 lg:p-10 overflow-auto">
-          <div className="max-w-3xl mx-auto space-y-10">
-            <div className="flex justify-center">
-              <div className="inline-flex gap-2 bg-black/50 backdrop-blur-lg border border-white/10 rounded-full p-1.5 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-                {tabs.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveTab(t.id as any)}
-                    className={`px-7 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                      activeTab === t.id
-                        ? "bg-white/15 text-white shadow-[inset_0_1px_4px_rgba(255,255,255,0.1)]"
-                        : "text-gray-400 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
+          <div className="max-w-3xl mx-auto space-y-8">
+
+            {/* ── TABS ── */}
+            <div className="flex flex-wrap border-b border-[#1a1a1a]">
+              {tabs.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setActiveTab(t.id as any)}
+                  className={`px-5 py-3 text-xs font-black uppercase tracking-widest transition-colors border-b-2 -mb-px ${
+                    activeTab === t.id
+                      ? "border-[#f97316] text-[#f97316]"
+                      : "border-transparent text-[#444] hover:text-[#888]"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
 
+            {/* ═══════════════════════════════════════
+                TAB: PERFIL
+            ═══════════════════════════════════════ */}
             {activeTab === "profile" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-8"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-8">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-sm text-gray-400 mb-3 block font-medium">Avatar</label>
-                    <div className="flex items-center gap-5">
-                      <div className="relative">
-                        <img
-                          src={avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user?.id}`}
-                          className="h-24 w-24 rounded-full object-cover border-4 border-white/10 shadow-[0_0_20px_rgba(249,115,22,0.3)]"
-                        />
-                      </div>
-                      <label className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:border-[#f97316]/50 hover:bg-white/10 transition-all cursor-pointer text-sm font-medium">
-                        <Camera className="h-5 w-5" />
-                        Alterar avatar
+                    <label className="text-[10px] uppercase tracking-widest text-[#444] mb-3 block">Avatar</label>
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user?.id}`}
+                        className="h-20 w-20 object-cover border border-[#1a1a1a] grayscale"
+                      />
+                      <label className="flex items-center gap-2 px-4 py-2.5 border border-[#222] text-[#666] hover:border-[#444] hover:text-[#999] transition-colors cursor-pointer text-xs uppercase tracking-widest">
+                        <Camera className="h-3.5 w-3.5" />
+                        Alterar
                         <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-sm text-gray-400 mb-3 block font-medium">Banner do Card</label>
-                    <div className="relative h-32 rounded-2xl overflow-hidden border border-white/10 group shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+                    <label className="text-[10px] uppercase tracking-widest text-[#444] mb-3 block">Banner do Card</label>
+                    <div className="relative h-28 border border-[#1a1a1a] group overflow-hidden">
                       {bannerUrl ? (
-                        <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+                        <img
+                          src={bannerUrl}
+                          alt="Banner"
+                          className="w-full h-full object-cover grayscale opacity-60"
+                          style={{
+                            filter: `grayscale(1) opacity(0.6)${bannerBlur > 0 ? ` blur(${bannerBlur}px)` : ""}`,
+                            transform: bannerBlur > 0 ? "scale(1.08)" : "scale(1)",
+                          }}
+                        />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-[#f97316]/5 via-black/80 to-black flex items-center justify-center">
-                          <span className="text-gray-500">Sem banner</span>
+                        <div className="w-full h-full bg-[#0d0d0d] flex items-center justify-center">
+                          <span className="text-[#2a2a2a] text-xs uppercase tracking-widest">Sem banner</span>
                         </div>
                       )}
-                      <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer">
-                        <Upload className="h-8 w-8 text-white" />
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <Upload className="h-6 w-6 text-[#555]" />
                         <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
                       </label>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-5">
                   <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Nome de exibição</label>
+                    <label className="text-[10px] uppercase tracking-widest text-[#444] mb-2 block">Nome de exibição</label>
                     <input
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#f97316]/50 focus:ring-2 focus:ring-[#f97316]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-[#0d0d0d] border border-[#1a1a1a] text-white text-sm placeholder-[#333] focus:border-[#f97316] outline-none font-mono transition-colors"
                       placeholder="Seu nome visível"
                     />
                   </div>
 
                   <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Username</label>
-                    <div className="flex rounded-xl overflow-hidden border border-white/10 focus-within:border-[#f97316]/50 transition-all">
-                      <span className="inline-flex items-center px-5 py-4 bg-black/60 text-gray-500 text-sm">
+                    <label className="text-[10px] uppercase tracking-widest text-[#444] mb-2 block">Username</label>
+                    <div className="flex border border-[#1a1a1a] focus-within:border-[#f97316] transition-colors">
+                      <span className="inline-flex items-center px-4 py-3 bg-[#0a0a0a] text-[#333] text-xs border-r border-[#1a1a1a]">
                         safirahost.xyz/
                       </span>
                       <input
                         value={username}
                         onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
-                        className="flex-1 px-5 py-4 bg-black/40 text-white placeholder-gray-500 outline-none"
+                        className="flex-1 px-4 py-3 bg-[#0d0d0d] text-white text-sm placeholder-[#333] outline-none font-mono"
                         placeholder="seuusername"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Bio</label>
+                    <label className="text-[10px] uppercase tracking-widest text-[#444] mb-2 block">Bio</label>
                     <textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       maxLength={200}
                       rows={4}
-                      className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#f97316]/50 focus:ring-2 focus:ring-[#f97316]/20 outline-none resize-none transition-all"
+                      className="w-full px-4 py-3 bg-[#0d0d0d] border border-[#1a1a1a] text-white text-sm placeholder-[#333] focus:border-[#f97316] outline-none resize-none font-mono transition-colors"
                       placeholder="Fale um pouco sobre você..."
                     />
-                    <p className="text-xs text-gray-500 mt-2 text-right">{bio.length}/200</p>
+                    <p className="text-[10px] text-[#333] mt-1 text-right">{bio.length}/200</p>
                   </div>
 
                   <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Discord Tag</label>
+                    <label className="text-[10px] uppercase tracking-widest text-[#444] mb-2 block">Discord Tag</label>
                     <input
                       value={discordTag}
                       onChange={(e) => setDiscordTag(e.target.value)}
-                      className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#f97316]/50 focus:ring-2 focus:ring-[#f97316]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-[#0d0d0d] border border-[#1a1a1a] text-white text-sm placeholder-[#333] focus:border-[#f97316] outline-none font-mono transition-colors"
                       placeholder="seuusuario#1234"
                     />
                   </div>
                 </div>
-
-                <div className="pt-8 border-t border-white/5 space-y-6">
-                  <h3 className="text-xl font-bold flex items-center gap-3">
-                    <Sparkles className="h-6 w-6 text-[#f97316]" />
-                    Personalização Avançada
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label className="text-sm text-gray-400 mb-2 block flex items-center gap-2">
-                        <Music className="h-4 w-4" /> Música de fundo
-                      </label>
-                      <input
-                        value={songUrl}
-                        onChange={(e) => setSongUrl(e.target.value)}
-                        placeholder="Link direto .mp3 / .ogg"
-                        className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:border-[#f97316]/50 outline-none transition-all"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-gray-400 mb-2 block flex items-center gap-2">
-                        <LucideImage className="h-4 w-4" /> Imagem de fundo
-                      </label>
-                      <input
-                        value={backgroundUrl}
-                        onChange={(e) => setBackgroundUrl(e.target.value)}
-                        placeholder="Link da imagem"
-                        className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:border-[#f97316]/50 outline-none transition-all"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-gray-400 mb-2 block flex items-center gap-2">
-                        <Film className="h-4 w-4" /> Video de fundo
-                      </label>
-                      <input
-                        value={backgroundVideoUrl}
-                        onChange={(e) => setBackgroundVideoUrl(e.target.value)}
-                        placeholder="Link do video"
-                        className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:border-[#f97316]/50 outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-8 border-t border-white/5">
-                  <h3 className="text-xl font-bold mb-5">Visibilidade</h3>
-                  <div className="space-y-5">
-                    {[
-                      { label: "Mostrar Discord Tag", value: showDiscord, setter: setShowDiscord },
-                      { label: "Mostrar Badges", value: showBadges, setter: setShowBadges },
-                      { label: "Mostrar Contador de Views", value: showViews, setter: setShowViews },
-                    ].map((item) => (
-                      <label key={item.label} className="flex items-center justify-between cursor-pointer group">
-                        <span className="text-gray-300 group-hover:text-white transition-colors text-base">
-                          {item.label}
-                        </span>
-                        <div
-                          onClick={() => item.setter(!item.value)}
-                          className={`w-14 h-7 rounded-full transition-colors duration-300 ease-in-out flex items-center p-1 ${
-                            item.value ? "bg-[#f97316]" : "bg-gray-700"
-                          }`}
-                        >
-                          <div
-                            className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-300 ${
-                              item.value ? "translate-x-7" : "translate-x-0"
-                            }`}
-                          />
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
+              </div>
             )}
 
+            {/* ═══════════════════════════════════════
+                TAB: LINKS
+            ═══════════════════════════════════════ */}
             {activeTab === "links" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-8"
-              >
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold">Seus Links</h3>
+                  <h3 className="text-[10px] uppercase tracking-widest text-[#444]">Seus Links</h3>
                   <button
                     onClick={addLink}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 text-sm font-medium transition-all"
+                    className="flex items-center gap-2 px-4 py-2 border border-[#222] text-[#555] hover:border-[#444] hover:text-[#999] text-xs uppercase tracking-widest transition-colors"
                   >
-                    <Plus className="h-4 w-4" />
-                    Adicionar link
+                    <Plus className="h-3.5 w-3.5" />
+                    Adicionar
                   </button>
                 </div>
 
                 {links.length === 0 ? (
-                  <div className="text-center py-16 border border-dashed border-white/10 rounded-2xl bg-black/30">
-                    <p className="text-gray-400 text-lg">Nenhum link adicionado ainda</p>
-                    <p className="text-gray-500 mt-2">Clique em "Adicionar link" para começar</p>
+                  <div className="text-center py-14 border border-dashed border-[#1a1a1a]">
+                    <p className="text-[#333] text-xs uppercase tracking-widest">Nenhum link adicionado</p>
+                    <p className="text-[#222] text-xs mt-2">Clique em "Adicionar" para começar</p>
                   </div>
                 ) : (
-                  <div className="space-y-5">
+                  <div className="space-y-3">
                     {links.map((link, index) => (
                       <div
                         key={index}
-                        className="p-5 bg-black/40 border border-white/10 rounded-2xl hover:border-white/30 transition-all duration-300"
+                        className="p-4 bg-[#0a0a0a] border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors"
                       >
-                        <div className="flex gap-4 mb-4">
+                        <div className="flex gap-3 mb-3">
                           <select
                             value={link.icon}
                             onChange={(e) => updateLink(index, "icon", e.target.value)}
-                            className="px-4 py-3 bg-black/60 border border-white/10 rounded-xl text-gray-300 text-sm min-w-[140px]"
+                            className="px-3 py-2.5 bg-[#111] border border-[#1a1a1a] text-[#666] text-xs font-mono min-w-[130px] outline-none focus:border-[#f97316] transition-colors"
                           >
                             <option value="website">🌐 Website</option>
                             <option value="github">🗽 GitHub</option>
@@ -533,15 +470,15 @@ const Editor = () => {
                           <input
                             value={link.label}
                             onChange={(e) => updateLink(index, "label", e.target.value)}
-                            placeholder="Nome do link (ex: Meu Instagram)"
-                            className="flex-1 px-5 py-3 bg-black/60 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#f97316]/50 outline-none"
+                            placeholder="Nome do link"
+                            className="flex-1 px-4 py-2.5 bg-[#111] border border-[#1a1a1a] text-white text-sm placeholder-[#333] focus:border-[#f97316] outline-none font-mono transition-colors"
                           />
 
                           <button
                             onClick={() => removeLink(index)}
-                            className="p-3 rounded-xl hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
+                            className="p-2.5 border border-[#1a1a1a] hover:border-red-900/40 text-[#444] hover:text-red-500 transition-colors"
                           >
-                            <Trash2 className="h-5 w-5" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
 
@@ -549,178 +486,165 @@ const Editor = () => {
                           value={link.url}
                           onChange={(e) => updateLink(index, "url", e.target.value)}
                           placeholder="https://..."
-                          className="w-full px-5 py-3 bg-black/60 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#f97316]/50 outline-none"
+                          className="w-full px-4 py-2.5 bg-[#111] border border-[#1a1a1a] text-white text-sm placeholder-[#333] focus:border-[#f97316] outline-none font-mono transition-colors"
                         />
                       </div>
                     ))}
                   </div>
                 )}
-              </motion.div>
+              </div>
             )}
 
+            {/* ═══════════════════════════════════════
+                TAB: BADGES
+            ═══════════════════════════════════════ */}
             {activeTab === "badges" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-10"
-              >
-                <h3 className="text-xl font-bold">Suas Badges Equipadas</h3>
+              <div className="space-y-8">
+                <h3 className="text-[10px] uppercase tracking-widest text-[#444]">Suas Badges Equipadas</h3>
 
                 {userBadges.length === 0 ? (
-                  <div className="text-center py-16 border border-dashed border-white/10 rounded-2xl bg-black/30">
-                    <p className="text-gray-400 text-lg">Você ainda não possui badges</p>
-                    <p className="text-gray-500 mt-2">Badges são concedidas pela equipe Safira</p>
+                  <div className="text-center py-14 border border-dashed border-[#1a1a1a]">
+                    <p className="text-[#333] text-xs uppercase tracking-widest">Nenhuma badge</p>
+                    <p className="text-[#222] text-xs mt-2">Badges são concedidas pela equipe Safira</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {userBadges.map((ub: any) => {
                       const badge = ub.badges;
                       const isEquipped = equippedBadgeIds.has(ub.badge_id);
-
                       return (
-                        <motion.button
+                        <button
                           key={ub.id}
-                          whileHover={{ scale: 1.03, y: -4 }}
-                          whileTap={{ scale: 0.98 }}
                           onClick={() => toggleBadgeEquip(ub.badge_id)}
-                          className={`p-5 rounded-2xl border transition-all duration-300 backdrop-blur-sm ${
+                          className={`p-4 border text-left transition-colors ${
                             isEquipped
-                              ? "bg-[#f97316]/10 border-[#f97316]/40 shadow-[0_0_25px_rgba(249,115,22,0.25)]"
-                              : "bg-black/40 border-white/10 hover:border-white/30"
+                              ? "border-[#f97316]/40 bg-[#f97316]/5"
+                              : "border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#2a2a2a]"
                           }`}
                         >
-                          <div className="flex items-center gap-4">
-                            <BadgeIcon icon={badge.icon} color={badge.color} size={32} />
-                            <div className="flex-1 text-left">
-                              <p className="font-medium text-white truncate">{badge.name}</p>
-                              <p className="text-sm text-gray-400 truncate mt-0.5">{badge.description}</p>
+                          <div className="flex items-center gap-3">
+                            <BadgeIcon icon={badge.icon} color={badge.color} size={28} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-mono text-white truncate">{badge.name}</p>
+                              <p className="text-xs text-[#444] truncate mt-0.5 font-mono">{badge.description}</p>
                             </div>
                             <div
-                              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                                isEquipped ? "border-[#f97316] bg-[#f97316]/20" : "border-gray-600"
+                              className={`w-4 h-4 border flex items-center justify-center flex-shrink-0 ${
+                                isEquipped ? "border-[#f97316] bg-[#f97316]/20" : "border-[#333]"
                               }`}
                             >
-                              {isEquipped && <span className="text-[#f97316] text-xs font-bold">✓</span>}
+                              {isEquipped && <span className="text-[#f97316] text-[8px] font-black">✓</span>}
                             </div>
                           </div>
-                        </motion.button>
+                        </button>
                       );
                     })}
                   </div>
                 )}
 
                 {allBadges.length > 0 && (
-                  <div className="pt-8">
-                    <h3 className="text-xl font-bold mb-6">Badges Disponíveis</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="pt-6 border-t border-[#111]">
+                    <h3 className="text-[10px] uppercase tracking-widest text-[#444] mb-5">Badges Disponíveis</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                       {allBadges.map((badge) => {
                         const owned = userBadges.some((ub: any) => ub.badge_id === badge.id);
                         return (
                           <div
                             key={badge.id}
-                            className={`p-4 rounded-xl border text-center transition-all ${
+                            className={`p-3 border text-center transition-colors ${
                               owned
-                                ? "border-[#f97316]/30 bg-[#f97316]/5"
-                                : "border-white/10 bg-black/40 opacity-50"
+                                ? "border-[#f97316]/20 bg-[#0d0d0d]"
+                                : "border-[#111] bg-[#080808] opacity-40"
                             }`}
                           >
-                            <BadgeIcon icon={badge.icon} color={badge.color} size={28} className="mx-auto mb-3" />
-                            <p className="text-sm font-medium">{badge.name}</p>
-                            {!owned && <p className="text-xs text-gray-600 mt-1">🔒</p>}
+                            <BadgeIcon icon={badge.icon} color={badge.color} size={24} className="mx-auto mb-2" />
+                            <p className="text-xs font-mono text-[#666]">{badge.name}</p>
+                            {!owned && <p className="text-[10px] text-[#2a2a2a] mt-0.5">🔒</p>}
                           </div>
                         );
                       })}
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
             )}
 
+            {/* ═══════════════════════════════════════
+                TAB: ESTILO
+            ═══════════════════════════════════════ */}
             {activeTab === "style" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-10"
-              >
+              <div className="space-y-8">
+
                 <div>
-                  <h3 className="text-xl font-bold mb-6">Modelo do Card</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                  <h3 className="text-[10px] uppercase tracking-widest text-[#444] mb-5">Modelo do Card</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {CARD_TEMPLATES.map((t) => (
-                      <motion.button
+                      <button
                         key={t.id}
-                        whileHover={{ scale: 1.03, y: -4 }}
-                        whileTap={{ scale: 0.98 }}
                         onClick={() => setCardTemplate(t.id)}
-                        className={`p-6 rounded-2xl border text-center transition-all duration-300 ${
+                        className={`p-4 border text-center transition-colors ${
                           cardTemplate === t.id
-                            ? "bg-[#f97316]/10 border-[#f97316]/40 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
-                            : "bg-black/40 border-white/10 hover:border-white/30"
+                            ? "border-[#f97316]/50 bg-[#f97316]/5"
+                            : "border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#2a2a2a]"
                         }`}
                       >
-                        <p className="font-medium text-white">{t.label}</p>
-                        <p className="text-xs text-gray-400 mt-2">{t.desc}</p>
-                      </motion.button>
+                        <p className="text-sm font-mono text-white">{t.label}</p>
+                        <p className="text-[10px] text-[#444] mt-1.5 font-mono">{t.desc}</p>
+                      </button>
                     ))}
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="text-xl font-bold mb-6">Efeito do Perfil</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                <div className="pt-6 border-t border-[#111]">
+                  <h3 className="text-[10px] uppercase tracking-widest text-[#444] mb-5">Efeito do Perfil</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {EFFECT_OPTIONS.map((eff) => (
-                      <motion.button
+                      <button
                         key={eff.id}
-                        whileHover={{ scale: 1.03, y: -4 }}
-                        whileTap={{ scale: 0.98 }}
                         onClick={() => setProfileEffect(eff.id)}
-                        className={`p-6 rounded-2xl border text-center transition-all duration-300 ${
+                        className={`p-4 border text-center transition-colors ${
                           profileEffect === eff.id
-                            ? "bg-[#f97316]/10 border-[#f97316]/40 shadow-[0_0_20px_rgba(249,115,22,0.2)]"
-                            : "bg-black/40 border-white/10 hover:border-white/30"
+                            ? "border-[#f97316]/50 bg-[#f97316]/5"
+                            : "border-[#1a1a1a] bg-[#0a0a0a] hover:border-[#2a2a2a]"
                         }`}
                       >
-                        <p className="text-3xl mb-3">{eff.emoji}</p>
-                        <p className="text-sm font-medium">{eff.label}</p>
-                      </motion.button>
+                        <p className="text-2xl mb-2">{eff.emoji}</p>
+                        <p className="text-xs font-mono text-[#666]">{eff.label}</p>
+                      </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="pt-10 border-t border-white/5">
-                  <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                    <span className="text-[#f97316]">Cor da Borda do Card</span>
-                  </h3>
-
-                  <div className="space-y-8">
+                <div className="pt-6 border-t border-[#111]">
+                  <h3 className="text-[10px] uppercase tracking-widest text-[#444] mb-6">Cor da Borda do Card</h3>
+                  <div className="space-y-6">
                     <div>
-                      <label className="text-base text-gray-300 mb-3 block">Escolha a cor da borda</label>
-                      <div className="flex items-center gap-6">
+                      <label className="text-xs text-[#555] mb-3 block uppercase tracking-widest">Cor personalizada</label>
+                      <div className="flex items-center gap-5">
                         <input
                           type="color"
                           value={cardBorderColor}
                           onChange={(e) => setCardBorderColor(e.target.value)}
-                          className="w-20 h-20 rounded-xl cursor-pointer border-2 border-white/20 bg-transparent shadow-md"
+                          className="w-14 h-14 cursor-pointer border border-[#1a1a1a] bg-transparent"
                         />
-                        <div className="text-sm">
-                          <p className="text-gray-400">Cor atual:</p>
-                          <p className="font-mono text-white mt-1">{cardBorderColor}</p>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest text-[#444]">Cor atual</p>
+                          <p className="font-mono text-sm text-white mt-1">{cardBorderColor}</p>
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-base text-gray-300 mb-3 block">Cores rápidas</label>
-                      <div className="flex flex-wrap gap-4">
+                      <label className="text-xs text-[#555] mb-3 block uppercase tracking-widest">Cores rápidas</label>
+                      <div className="flex flex-wrap gap-3">
                         {PRESET_COLORS.map((color) => (
                           <button
                             key={color}
                             onClick={() => setCardBorderColor(color)}
-                            className={`w-14 h-14 rounded-xl border-2 transition-all duration-200 ${
+                            className={`w-10 h-10 border-2 transition-all ${
                               cardBorderColor === color
-                                ? "border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                                : "border-transparent hover:scale-110 hover:shadow-md"
+                                ? "border-white scale-110"
+                                : "border-transparent hover:scale-105"
                             }`}
                             style={{ backgroundColor: color }}
                           />
@@ -728,106 +652,286 @@ const Editor = () => {
                       </div>
                     </div>
 
-                    <div className="pt-4">
-                      <p className="text-base text-gray-300 mb-3">Como vai ficar a borda:</p>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-[#444] mb-3">Preview da borda</p>
                       <div
-                        className="h-32 rounded-2xl border-4 bg-black/50 flex items-center justify-center text-gray-400 text-lg font-medium"
+                        className="h-24 border-2 bg-[#0a0a0a] flex items-center justify-center"
                         style={{ borderColor: cardBorderColor }}
                       >
-                        Borda na cor escolhida
+                        <span className="text-[#333] text-xs uppercase tracking-widest font-mono">
+                          Borda na cor escolhida
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
 
-            {activeTab === "integrations" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-8"
-              >
-                <h3 className="text-xl font-bold">Integrações</h3>
+            {/* ═══════════════════════════════════════
+                TAB: PERSONALIZAÇÃO AVANÇADA
+                — Mídia de Fundo
+                — Visibilidade
+                — Desfoque do Banner
+            ═══════════════════════════════════════ */}
+            {activeTab === "advanced" && (
+              <div className="space-y-0">
 
-                <div className="space-y-6">
+                {/* ── MÍDIA DE FUNDO ── */}
+                <div className="pb-10">
+                  <h3 className="text-[10px] uppercase tracking-widest text-[#f97316] mb-6">
+                    Mídia de Fundo
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[10px] uppercase tracking-widest text-[#444] mb-2 flex items-center gap-2 block">
+                        <Music className="h-3 w-3" />
+                        Música de fundo
+                      </label>
+                      <input
+                        value={songUrl}
+                        onChange={(e) => setSongUrl(e.target.value)}
+                        placeholder="Link direto .mp3 / .ogg"
+                        className="w-full px-4 py-3 bg-[#0d0d0d] border border-[#1a1a1a] text-sm text-white placeholder-[#333] focus:border-[#f97316] outline-none font-mono transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] uppercase tracking-widest text-[#444] mb-2 flex items-center gap-2 block">
+                        <LucideImage className="h-3 w-3" />
+                        Imagem de fundo
+                      </label>
+                      <input
+                        value={backgroundUrl}
+                        onChange={(e) => setBackgroundUrl(e.target.value)}
+                        placeholder="Link da imagem"
+                        className="w-full px-4 py-3 bg-[#0d0d0d] border border-[#1a1a1a] text-sm text-white placeholder-[#333] focus:border-[#f97316] outline-none font-mono transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] uppercase tracking-widest text-[#444] mb-2 flex items-center gap-2 block">
+                        <Film className="h-3 w-3" />
+                        Video de fundo
+                      </label>
+                      <input
+                        value={backgroundVideoUrl}
+                        onChange={(e) => setBackgroundVideoUrl(e.target.value)}
+                        placeholder="Link do video"
+                        className="w-full px-4 py-3 bg-[#0d0d0d] border border-[#1a1a1a] text-sm text-white placeholder-[#333] focus:border-[#f97316] outline-none font-mono transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── VISIBILIDADE ── */}
+                <div className="py-10 border-t border-[#111]">
+                  <h3 className="text-[10px] uppercase tracking-widest text-[#f97316] mb-6">
+                    Visibilidade
+                  </h3>
+                  <div className="space-y-5">
+                    {[
+                      { label: "Mostrar Discord Tag",       value: showDiscord, setter: setShowDiscord },
+                      { label: "Mostrar Badges",            value: showBadges,  setter: setShowBadges  },
+                      { label: "Mostrar Contador de Views", value: showViews,   setter: setShowViews   },
+                    ].map((item) => (
+                      <label key={item.label} className="flex items-center justify-between cursor-pointer group">
+                        <span className="text-xs text-[#666] group-hover:text-[#999] transition-colors uppercase tracking-widest">
+                          {item.label}
+                        </span>
+                        <div
+                          onClick={() => item.setter(!item.value)}
+                          className={`w-10 h-5 transition-colors duration-200 flex items-center px-0.5 ${
+                            item.value ? "bg-[#f97316]" : "bg-[#1a1a1a]"
+                          }`}
+                        >
+                          <div
+                            className={`w-4 h-4 bg-white transform transition-transform duration-200 ${
+                              item.value ? "translate-x-5" : "translate-x-0"
+                            }`}
+                          />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── DESFOQUE DO BANNER ── */}
+                <div className="pt-10 border-t border-[#111] space-y-6">
                   <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Discord User ID</label>
+                    <h3 className="text-[10px] uppercase tracking-widest text-[#f97316] mb-1">
+                      Desfoque do Banner
+                    </h3>
+                    <p className="text-xs text-[#333] font-mono">
+                      Controla o desfoque da imagem do banner dentro do card de perfil.
+                    </p>
+                  </div>
+
+                  {/* Número grande */}
+                  <div className="flex items-end gap-3">
+                    <span className="text-5xl font-black text-white tabular-nums leading-none">
+                      {bannerBlur}
+                    </span>
+                    <span className="text-xs uppercase tracking-widest text-[#444] pb-2">px</span>
+                  </div>
+
+                  {/* Slider */}
+                  <div className="space-y-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={20}
+                      step={1}
+                      value={bannerBlur}
+                      onChange={(e) => setBannerBlur(Number(e.target.value))}
+                      className="w-full h-1.5 appearance-none outline-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #f97316 0%, #f97316 ${
+                          (bannerBlur / 20) * 100
+                        }%, #1a1a1a ${(bannerBlur / 20) * 100}%, #1a1a1a 100%)`,
+                      }}
+                    />
+                    <div className="flex justify-between text-[10px] text-[#333] uppercase tracking-widest font-mono">
+                      <span>0 — Nítido</span>
+                      <span>20 — Máximo</span>
+                    </div>
+                  </div>
+
+                  {/* Presets */}
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { label: "Off",   value: 0  },
+                      { label: "Suave", value: 4  },
+                      { label: "Médio", value: 10 },
+                      { label: "Forte", value: 20 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.value}
+                        onClick={() => setBannerBlur(preset.value)}
+                        className={`py-3 text-xs font-mono uppercase tracking-widest border transition-colors ${
+                          bannerBlur === preset.value
+                            ? "border-[#f97316]/50 text-[#f97316] bg-[#f97316]/5"
+                            : "border-[#1a1a1a] text-[#444] hover:border-[#2a2a2a] hover:text-[#666]"
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Preview do blur no banner */}
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-[#444] mb-3">
+                      Preview — Banner do card
+                    </p>
+                    <div className="relative h-28 overflow-hidden border border-[#1a1a1a]">
+                      {bannerUrl ? (
+                        <img
+                          src={bannerUrl}
+                          alt="preview banner"
+                          className="w-full h-full object-cover"
+                          style={{
+                            filter: bannerBlur > 0 ? `blur(${bannerBlur}px)` : "none",
+                            transform: bannerBlur > 0 ? "scale(1.08)" : "scale(1)",
+                            transition: "filter 0.2s, transform 0.2s",
+                          }}
+                        />
+                      ) : (
+                        <>
+                          {/* Fundo simulado quando sem banner */}
+                          <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-40">
+                            {[...Array(6)].map((_, i) => (
+                              <div
+                                key={i}
+                                className="w-8 h-8 rounded-full"
+                                style={{ backgroundColor: PRESET_COLORS[i] }}
+                              />
+                            ))}
+                          </div>
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              backdropFilter: bannerBlur > 0 ? `blur(${bannerBlur}px)` : "none",
+                              background: "rgba(10,10,10,0.3)",
+                            }}
+                          />
+                        </>
+                      )}
+                      <div className="absolute bottom-2 left-3">
+                        <span className="text-[10px] text-white/50 uppercase tracking-widest font-mono">
+                          {bannerBlur === 0 ? "Sem desfoque" : `Desfoque: ${bannerBlur}px`}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* ═══════════════════════════════════════
+                TAB: INTEGRAÇÕES
+            ═══════════════════════════════════════ */}
+            {activeTab === "integrations" && (
+              <div className="space-y-6">
+                <h3 className="text-[10px] uppercase tracking-widest text-[#444]">Integrações</h3>
+
+                <div className="space-y-5">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-[#444] mb-2 block">Discord User ID</label>
                     <input
                       value={discordUserId}
                       onChange={(e) => setDiscordUserId(e.target.value.trim())}
-                      className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#f97316]/50 focus:ring-2 focus:ring-[#f97316]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-[#0d0d0d] border border-[#1a1a1a] text-white text-sm placeholder-[#333] focus:border-[#f97316] outline-none font-mono transition-colors"
                       placeholder="Ex: 200207310625177602"
                     />
-                    <p className="text-xs text-gray-500 mt-2">
-                      Copie seu ID do Discord (clique direito no seu nome → Copiar ID de usuário)
+                    <p className="text-[10px] text-[#333] mt-2 font-mono">
+                      Clique direito no seu nome → Copiar ID de usuário
                     </p>
                   </div>
 
-                  {/* Campos desativados/comentados por enquanto */}
-                  {/* 
-                  <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Spotify Client ID</label>
-                    <input
-                      value={spotifyClientId}
-                      onChange={(e) => setSpotifyClientId(e.target.value)}
-                      className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#f97316]/50 outline-none transition-all opacity-50 cursor-not-allowed"
-                      placeholder="Ex: dd3631db64a24da8a1d5bba2ea489a6e"
-                      disabled
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Email</label>
-                    <input
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#f97316]/50 outline-none transition-all opacity-50 cursor-not-allowed"
-                      placeholder="Ex: seuemail@gmail.com"
-                      disabled
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm text-gray-400 mb-2 block">Spotify Access Token</label>
-                    <div className="flex items-center gap-4">
-                      <input
-                        value={spotifyAccessToken}
-                        readOnly
-                        className="flex-1 px-5 py-4 bg-black/40 border border-white/10 rounded-xl text-white placeholder-gray-500 opacity-50 cursor-not-allowed"
-                        placeholder="Autentique para obter"
-                        disabled
-                      />
-                      <button
-                        disabled
-                        className="px-6 py-4 rounded-xl bg-[#f97316]/30 text-black font-bold cursor-not-allowed opacity-50"
-                      >
-                        Autenticar Spotify
-                      </button>
-                    </div>
-                  </div>
-                  */}
-
-                  <div className="pt-6 border-t border-white/10">
-                    <p className="text-sm text-gray-500">
-                      Em breve: integração com Spotify, GitHub, Steam e mais...
+                  <div className="pt-5 border-t border-[#111]">
+                    <p className="text-xs text-[#2a2a2a] font-mono uppercase tracking-widest">
+                      Em breve: Spotify, GitHub, Steam...
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
+
           </div>
         </div>
 
-        <div className="hidden lg:block lg:w-[560px] border-l border-white/5 bg-gradient-to-br from-black via-[#0a0a0a] to-black p-10">
+        {/* ── RIGHT PANEL: PREVIEW ── */}
+        <div className="hidden lg:block lg:w-[520px] border-l border-[#111] bg-[#040404] p-10">
           <div className="sticky top-10">
-            <div className="rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_40px_rgba(249,115,22,0.15)]">
+            <p className="text-[10px] uppercase tracking-widest text-[#333] mb-5 font-mono">Preview</p>
+            <div className="border border-[#1a1a1a] overflow-hidden">
               <ProfileCard profile={previewProfile} />
             </div>
           </div>
         </div>
+
       </div>
+
+      <style>{`
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 16px;
+          height: 16px;
+          background: #f97316;
+          cursor: pointer;
+          border: 2px solid #050505;
+        }
+        input[type="range"]::-moz-range-thumb {
+          width: 16px;
+          height: 16px;
+          background: #f97316;
+          cursor: pointer;
+          border: 2px solid #050505;
+          border-radius: 0;
+        }
+      `}</style>
     </div>
   );
 };

@@ -48,7 +48,9 @@ const ProfilePage = () => {
         username: profileData.username,
         displayName: profileData.display_name || profileData.username,
         bio: profileData.bio || "",
-        avatar: profileData.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${profileData.user_id}`,
+        avatar:
+          profileData.avatar_url ||
+          `https://api.dicebear.com/9.x/avataaars/svg?seed=${profileData.user_id}`,
         banner: profileData.banner_url,
         discordTag: profileData.discord_tag || "",
         status: "online" as const,
@@ -62,8 +64,13 @@ const ProfilePage = () => {
         backgroundUrl: profileData.background_url || undefined,
         backgroundVideoUrl: profileData.background_video_url || undefined,
         songUrl: profileData.song_url || undefined,
-        cardBackgroundColor: profileData.card_background_color || "#8b5cf6", // <-- Cor de fundo do card (padrão roxo)
-        links: (links || []).map((l) => ({ label: l.label, url: l.url, icon: l.icon || "website" })),
+        bannerBlur: profileData.banner_blur ?? 0,
+        cardBackgroundColor: profileData.card_background_color || "#8b5cf6",
+        links: (links || []).map((l) => ({
+          label: l.label,
+          url: l.url,
+          icon: l.icon || "website",
+        })),
         badges: (userBadges || []).map((ub: any) => ({
           id: ub.badges.id,
           name: ub.badges.name,
@@ -132,12 +139,12 @@ const ProfilePage = () => {
         <div className="absolute inset-0 bg-background/40 backdrop-blur-sm z-[1]" />
       )}
 
-      {/* Card com fundo personalizado */}
+      {/* Card */}
       <div className="relative z-10 w-full max-w-2xl">
-        <ProfileCard 
-          profile={profile} 
-          isFullPage 
-          cardBackgroundColor={profile.cardBackgroundColor} // <-- Passando a cor de fundo pro componente
+        <ProfileCard
+          profile={profile}
+          isFullPage
+          cardBackgroundColor={profile.cardBackgroundColor}
         />
       </div>
     </div>

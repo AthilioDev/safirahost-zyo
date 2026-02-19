@@ -41,6 +41,7 @@ export interface ProfileData {
   backgroundUrl?: string;
   backgroundVideoUrl?: string;
   songUrl?: string;
+  bannerBlur?: number;
 }
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -54,6 +55,7 @@ const iconMap: Record<string, React.ReactNode> = {
 interface ProfileCardProps {
   profile: ProfileData;
   isFullPage?: boolean;
+  cardBackgroundColor?: string;
 }
 
 // 3D perspective tilt hook
@@ -82,10 +84,10 @@ const useTilt = () => {
   return { ref, style, handleMouseMove, handleMouseLeave };
 };
 
-// Music player - AGORA COMEÇA TOCANDO AUTOMATICAMENTE
+// Music player
 const MusicPlayer = ({ songUrl }: { songUrl: string }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(true); // Começa como true = tocando
+  const [playing, setPlaying] = useState(true);
 
   const toggle = () => {
     if (!audioRef.current) return;
@@ -97,19 +99,15 @@ const MusicPlayer = ({ songUrl }: { songUrl: string }) => {
     setPlaying(!playing);
   };
 
-  // Toca automaticamente ao montar
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.play().catch(() => {
-        // Alguns navegadores bloqueiam autoplay sem interação
-        // Se falhar, fica no estado "playing: true" mas pausado visualmente
-      });
+      audioRef.current.play().catch(() => {});
     }
   }, []);
 
   return (
     <div className="flex items-center gap-2 mb-4">
-      <audio ref={audioRef} src={songUrl} loop autoPlay /> {/* autoPlay adicionado */}
+      <audio ref={audioRef} src={songUrl} loop autoPlay />
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -155,7 +153,15 @@ const ProfileInfo = ({ profile }: { profile: ProfileData }) => (
   </div>
 );
 
-const DiscordButton = ({ discordTag, copied, copyDiscord }: { discordTag: string; copied: boolean; copyDiscord: () => void }) => (
+const DiscordButton = ({
+  discordTag,
+  copied,
+  copyDiscord,
+}: {
+  discordTag: string;
+  copied: boolean;
+  copyDiscord: () => void;
+}) => (
   <motion.button
     whileHover={{ scale: 1.01 }}
     whileTap={{ scale: 0.98 }}
@@ -202,19 +208,55 @@ const LinksSection = ({ links }: { links: ProfileLink[] }) => (
   </div>
 );
 
-// CLASSIC
-const CardContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; copied: boolean; copyDiscord: () => void }) => (
-  <div className="relative glass rounded-2xl overflow-hidden w-full max-w-2xl mx-auto" style={{ backdropFilter: "blur(20px)" }}>
-    <ProfileEffect effect={profile.profileEffect || "none"} />
-    
+// ── BANNER com blur no fundo ──
+const BannerSection = ({ profile }: { profile: ProfileData }) => {
+  const blurValue = profile.bannerBlur ?? 0;
+
+  return (
     <div className="relative h-48 overflow-hidden">
       {profile.banner ? (
-        <img src={profile.banner} alt="Banner" className="w-full h-full object-cover" />
+        <>
+          {/* Imagem de fundo com blur */}
+          <img
+            src={profile.banner}
+            alt="Banner"
+            className="w-full h-full object-cover"
+            style={{
+              filter: blurValue > 0 ? `blur(${blurValue}px)` : "none",
+              transform: blurValue > 0 ? "scale(1.08)" : "scale(1)", // evita bordas brancas no blur
+              transition: "filter 0.3s, transform 0.3s",
+            }}
+          />
+        </>
       ) : (
-        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10" />
+        <div
+          className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10"
+          style={{
+            filter: blurValue > 0 ? `blur(${blurValue}px)` : "none",
+          }}
+        />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-card/30" />
     </div>
+  );
+};
+
+// ── CLASSIC ──
+const CardContent = ({
+  profile,
+  copied,
+  copyDiscord,
+}: {
+  profile: ProfileData;
+  copied: boolean;
+  copyDiscord: () => void;
+}) => (
+  <div
+    className="relative glass rounded-2xl overflow-hidden w-full max-w-2xl mx-auto"
+    style={{ backdropFilter: "blur(20px)" }}
+  >
+    <ProfileEffect effect={profile.profileEffect || "none"} />
+    <BannerSection profile={profile} />
 
     <div className="relative px-6 pb-6 -mt-16">
       <div className="flex items-end gap-4 mb-4">
@@ -235,87 +277,124 @@ const CardContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; c
 
       {profile.songUrl && <MusicPlayer songUrl={profile.songUrl} />}
 
-      {(profile.showBadges !== false) && profile.badges && profile.badges.length > 0 && (
+      {profile.showBadges !== false && profile.badges && profile.badges.length > 0 && (
         <BadgesRow badges={profile.badges} />
       )}
 
-      {(profile.showDiscord !== false) && profile.discordTag && (
+      {profile.showDiscord !== false && profile.discordTag && (
         <DiscordButton discordTag={profile.discordTag} copied={copied} copyDiscord={copyDiscord} />
       )}
 
       <LinksSection links={profile.links} />
 
-      {(profile.showViews !== false) && (
-        <p className="text-center text-xs text-muted-foreground mt-4">{profile.views.toLocaleString()} views</p>
+      {profile.showViews !== false && (
+        <p className="text-center text-xs text-muted-foreground mt-4">
+          {profile.views.toLocaleString()} views
+        </p>
       )}
     </div>
   </div>
 );
 
-// CYBERPUNK
-const CyberpunkContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; copied: boolean; copyDiscord: () => void }) => (
-  <div
-    className="relative rounded-2xl overflow-hidden w-full max-w-2xl mx-auto"
-    style={{ boxShadow: "0 0 30px hsl(270 100% 65% / 0.3), inset 0 0 30px hsl(270 100% 65% / 0.05)" }}
-  >
-    <ProfileEffect effect={profile.profileEffect || "none"} />
-    <div className="h-48 relative overflow-hidden">
-      {profile.banner ? (
-        <img
-          src={profile.banner}
-          alt="Banner"
-          className="w-full h-full object-cover"
-          style={{ filter: "hue-rotate(20deg) saturate(1.5)" }}
-        />
-      ) : (
-        <div
-          className="w-full h-full bg-gradient-to-r from-primary via-accent to-primary animate-gradient-shift"
-          style={{ backgroundSize: "200% 200%" }}
-        />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-card/25" />
-      <div className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono rounded bg-primary/20 border border-primary/40 text-primary">
-        safirahost.xyz
-      </div>
-    </div>
-    <div className="bg-card/90 backdrop-blur-xl border-t border-primary/30 px-6 pb-6">
-      <div className="flex items-end gap-4 -mt-16 mb-4">
-        <div className="relative">
+// ── CYBERPUNK ──
+const CyberpunkContent = ({
+  profile,
+  copied,
+  copyDiscord,
+}: {
+  profile: ProfileData;
+  copied: boolean;
+  copyDiscord: () => void;
+}) => {
+  const blurValue = profile.bannerBlur ?? 0;
+
+  return (
+    <div
+      className="relative rounded-2xl overflow-hidden w-full max-w-2xl mx-auto"
+      style={{
+        boxShadow: "0 0 30px hsl(270 100% 65% / 0.3), inset 0 0 30px hsl(270 100% 65% / 0.05)",
+      }}
+    >
+      <ProfileEffect effect={profile.profileEffect || "none"} />
+      <div className="h-48 relative overflow-hidden">
+        {profile.banner ? (
           <img
-            src={profile.avatar}
-            alt={profile.displayName}
-            className="h-20 w-20 rounded-lg border-2 border-primary/50 object-cover"
-            style={{ boxShadow: "0 0 15px hsl(270 100% 65% / 0.3)" }}
+            src={profile.banner}
+            alt="Banner"
+            className="w-full h-full object-cover"
+            style={{
+              filter: `hue-rotate(20deg) saturate(1.5)${blurValue > 0 ? ` blur(${blurValue}px)` : ""}`,
+              transform: blurValue > 0 ? "scale(1.08)" : "scale(1)",
+              transition: "filter 0.3s, transform 0.3s",
+            }}
           />
-          <div className="absolute -bottom-1 -right-1">
-            <StatusIndicator status={profile.status} size="lg" />
-          </div>
-        </div>
-        <div className="pb-1">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-foreground">{profile.displayName}</h2>
-            {profile.isVerified && <VerifiedBadge />}
-          </div>
+        ) : (
+          <div
+            className="w-full h-full bg-gradient-to-r from-primary via-accent to-primary animate-gradient-shift"
+            style={{
+              backgroundSize: "200% 200%",
+              filter: blurValue > 0 ? `blur(${blurValue}px)` : "none",
+            }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-card/25" />
+        <div className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono rounded bg-primary/20 border border-primary/40 text-primary">
+          safirahost.xyz
         </div>
       </div>
-      {profile.bio && <p className="text-sm text-muted-foreground mb-4 border-l-2 border-primary/40 pl-3">{profile.bio}</p>}
-      {profile.songUrl && <MusicPlayer songUrl={profile.songUrl} />}
-      {(profile.showBadges !== false) && profile.badges && profile.badges.length > 0 && (
-        <BadgesRow badges={profile.badges} />
-      )}
-      {(profile.showDiscord !== false) && profile.discordTag && (
-        <DiscordButton discordTag={profile.discordTag} copied={copied} copyDiscord={copyDiscord} />
-      )}
-      <LinksSection links={profile.links} />
-      {(profile.showViews !== false) && (
-        <p className="text-center text-xs text-muted-foreground mt-4 font-mono">{profile.views.toLocaleString()} views</p>
-      )}
+      <div className="bg-card/90 backdrop-blur-xl border-t border-primary/30 px-6 pb-6">
+        <div className="flex items-end gap-4 -mt-16 mb-4">
+          <div className="relative">
+            <img
+              src={profile.avatar}
+              alt={profile.displayName}
+              className="h-20 w-20 rounded-lg border-2 border-primary/50 object-cover"
+              style={{ boxShadow: "0 0 15px hsl(270 100% 65% / 0.3)" }}
+            />
+            <div className="absolute -bottom-1 -right-1">
+              <StatusIndicator status={profile.status} size="lg" />
+            </div>
+          </div>
+          <div className="pb-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-foreground">{profile.displayName}</h2>
+              {profile.isVerified && <VerifiedBadge />}
+            </div>
+          </div>
+        </div>
+        {profile.bio && (
+          <p className="text-sm text-muted-foreground mb-4 border-l-2 border-primary/40 pl-3">
+            {profile.bio}
+          </p>
+        )}
+        {profile.songUrl && <MusicPlayer songUrl={profile.songUrl} />}
+        {profile.showBadges !== false && profile.badges && profile.badges.length > 0 && (
+          <BadgesRow badges={profile.badges} />
+        )}
+        {profile.showDiscord !== false && profile.discordTag && (
+          <DiscordButton discordTag={profile.discordTag} copied={copied} copyDiscord={copyDiscord} />
+        )}
+        <LinksSection links={profile.links} />
+        {profile.showViews !== false && (
+          <p className="text-center text-xs text-muted-foreground mt-4 font-mono">
+            {profile.views.toLocaleString()} views
+          </p>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
-// MINIMAL
-const MinimalContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; copied: boolean; copyDiscord: () => void }) => (
+// ── MINIMAL (sem banner, não aplica blur) ──
+const MinimalContent = ({
+  profile,
+  copied,
+  copyDiscord,
+}: {
+  profile: ProfileData;
+  copied: boolean;
+  copyDiscord: () => void;
+}) => (
   <div className="relative glass rounded-2xl overflow-hidden w-full max-w-lg mx-auto p-8 text-center">
     <ProfileEffect effect={profile.profileEffect || "none"} />
     <img
@@ -328,10 +407,12 @@ const MinimalContent = ({ profile, copied, copyDiscord }: { profile: ProfileData
         <h2 className="text-xl font-bold text-foreground">{profile.displayName}</h2>
         {profile.isVerified && <VerifiedBadge />}
       </div>
-      {profile.bio && <p className="text-sm text-secondary-foreground/80 leading-relaxed pt-1">{profile.bio}</p>}
+      {profile.bio && (
+        <p className="text-sm text-secondary-foreground/80 leading-relaxed pt-1">{profile.bio}</p>
+      )}
     </div>
     {profile.songUrl && <MusicPlayer songUrl={profile.songUrl} />}
-    {(profile.showBadges !== false) && profile.badges && profile.badges.length > 0 && (
+    {profile.showBadges !== false && profile.badges && profile.badges.length > 0 && (
       <div className="flex flex-wrap justify-center gap-1.5 mb-4">
         {profile.badges.map((b) => (
           <motion.div
@@ -345,29 +426,32 @@ const MinimalContent = ({ profile, copied, copyDiscord }: { profile: ProfileData
         ))}
       </div>
     )}
-    {(profile.showDiscord !== false) && profile.discordTag && (
+    {profile.showDiscord !== false && profile.discordTag && (
       <DiscordButton discordTag={profile.discordTag} copied={copied} copyDiscord={copyDiscord} />
     )}
     <LinksSection links={profile.links} />
-    {(profile.showViews !== false) && (
+    {profile.showViews !== false && (
       <p className="text-xs text-muted-foreground mt-4">{profile.views.toLocaleString()} views</p>
     )}
   </div>
 );
 
-const templateMap: Record<string, React.FC<{ profile: ProfileData; copied: boolean; copyDiscord: () => void }>> = {
+const templateMap: Record<
+  string,
+  React.FC<{ profile: ProfileData; copied: boolean; copyDiscord: () => void }>
+> = {
   classic: CardContent,
   minimal: MinimalContent,
   cyberpunk: CyberpunkContent,
 };
 
 export const CARD_TEMPLATES = [
-  { id: "classic", label: "Clássico", desc: "Banner + avatar lateral" },
-  { id: "minimal", label: "Minimalista", desc: "Limpo e centralizado" },
-  { id: "cyberpunk", label: "Cyberpunk", desc: "Estilo futurista com neon" },
+  { id: "classic",   label: "Clássico",     desc: "Banner + avatar lateral" },
+  { id: "minimal",   label: "Minimalista",  desc: "Limpo e centralizado"    },
+  { id: "cyberpunk", label: "Cyberpunk",    desc: "Estilo futurista com neon"},
 ];
 
-export const ProfileCard = ({ profile, isFullPage }: ProfileCardProps) => {
+export const ProfileCard = ({ profile, isFullPage, cardBackgroundColor }: ProfileCardProps) => {
   const [copied, setCopied] = useState(false);
   const tilt = useTilt();
 

@@ -1,16 +1,79 @@
 import { motion } from "framer-motion";
-import { Gem, Sparkles, ArrowRight, Users, Link as LinkIcon, Eye, ChevronRight, ShieldCheck } from "lucide-react";
+import { Gem, ArrowRight, Users, Eye, ShieldCheck, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+const BADGE_SHOP = [
+  {
+    id: "early",
+    name: "Early Adopter",
+    icon: "⚡",
+    description: "Exclusivo para os primeiros membros da plataforma.",
+    price: "Grátis",
+    priceNote: "somente para os primeiros",
+    accent: "#f97316",
+    available: false,
+  },
+  {
+    id: "verified",
+    name: "Verified",
+    icon: "✓",
+    description: "Conta verificada pela equipe Safira.",
+    price: "Convite",
+    priceNote: "somente por convite",
+    accent: "#3b82f6",
+    available: false,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    icon: "◆",
+    description: "Acesso vitalício a todas as funcionalidades premium.",
+    price: "R$ 29,90",
+    priceNote: "pagamento único",
+    accent: "#f97316",
+    available: false,
+  },
+  {
+    id: "og",
+    name: "OG Member",
+    icon: "👑",
+    description: "Membro original. Histórico desde o lançamento.",
+    price: "R$ 49,90",
+    priceNote: "edição limitada",
+    accent: "#facc15",
+    available: false,
+  },
+  {
+    id: "dev",
+    name: "Developer",
+    icon: "{ }",
+    description: "Para desenvolvedores que contribuíram com o projeto.",
+    price: "Conquista",
+    priceNote: "concedida pela equipe",
+    accent: "#10b981",
+    available: false,
+  },
+  {
+    id: "vip",
+    name: "VIP",
+    icon: "★",
+    description: "Status de membro VIP na comunidade Safira.",
+    price: "R$ 19,90",
+    priceNote: "por mês",
+    accent: "#8b5cf6",
+    available: false,
+  },
+];
+
 const Landing = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [usernameInput, setUsernameInput] = useState("");
-  const [stats, setStats] = useState({ users: 0, views: 0 });
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [totalUsers, setTotalUsers] = useState(102);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,10 +84,7 @@ const Landing = () => {
         .limit(24);
 
       if (profiles) {
-        setStats({
-          users: profiles.length,
-          views: profiles.reduce((sum, p) => sum + (p.views || 0), 0),
-        });
+        setTotalUsers(profiles.length || 102);
         setRecentUsers(profiles);
       }
     };
@@ -42,152 +102,170 @@ const Landing = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white overflow-x-hidden flex flex-col">
-      {/* Fundo animado */}
-      <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0">
-        <div className="absolute inset-0 bg-grid opacity-20"></div>
-        <div className="absolute inset-0">
-          <div className="moving-light" style={{ top: "15%", left: "10%", width: "28vw", height: "28vw", animationDuration: "18s" }} />
-          <div className="moving-light" style={{ top: "55%", left: "70%", width: "20vw", height: "20vw", animationDuration: "22s", animationDelay: "3s" }} />
-          <div className="moving-light" style={{ top: "40%", left: "35%", width: "24vw", height: "24vw", animationDuration: "15s", animationDelay: "6s" }} />
-        </div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_100%)] opacity-85" />
+    <div className="min-h-screen bg-[#050505] text-white font-mono overflow-x-hidden flex flex-col">
+
+      {/* ── GRAIN OVERLAY ── */}
+      <div className="pointer-events-none fixed inset-0 z-[999] opacity-[0.025]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "128px 128px",
+        }}
+      />
+
+      {/* ── GRID BG ── */}
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.04]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)`,
+          backgroundSize: "60px 60px",
+        }}
+      />
+
+      {/* ── GLOW ── */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(249,115,22,0.06) 0%, transparent 65%)" }} />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(249,115,22,0.04) 0%, transparent 65%)" }} />
       </div>
 
-      {/* Navbar */}
-      <nav className="relative z-50 flex justify-center pt-5 pb-4">
-        <div className="relative flex items-center justify-between w-[95%] max-w-7xl px-6 py-3 bg-black/40 backdrop-blur-xl border border-white/5 rounded-full shadow-xl">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-orange-500/25 blur-xl rounded-full opacity-0 group-hover:opacity-80 transition-opacity duration-500" />
-              <Gem className="h-10 w-10 text-orange-500 relative" />
-            </div>
-            <span className="text-2xl font-black tracking-tight">Safira</span>
-          </Link>
+      {/* ════════════════════════════════════════
+          NAVBAR
+      ════════════════════════════════════════ */}
+      <nav className="relative z-50 border-b border-[#111] bg-[#080808]/90 backdrop-blur-md px-6 py-3 flex items-center justify-between sticky top-0">
+        <Link to="/" className="flex items-center gap-2">
+          <Gem className="h-5 w-5 text-[#f97316]" />
+          <span className="font-black text-lg tracking-widest text-[#f97316] uppercase">Safira</span>
+        </Link>
 
-          <div className="hidden md:flex items-center gap-2 bg-black/30 backdrop-blur-sm border border-white/5 rounded-full p-1.5">
-            <button className="px-7 py-2.5 rounded-full text-sm font-bold tracking-widest bg-white text-black shadow-[0_0_25px_rgba(255,255,255,0.45)]">
-              HOME
-            </button>
-            <button className="px-7 py-2.5 rounded-full text-sm font-bold tracking-widest text-gray-300 hover:text-white hover:bg-white/10 transition">
-              RANK
-            </button>
-          </div>
+        <div className="hidden md:flex items-center gap-1 border border-[#1a1a1a] p-1">
+          <button className="px-6 py-2 text-xs font-black uppercase tracking-widest bg-[#f97316] text-black">
+            Home
+          </button>
+          <button className="px-6 py-2 text-xs font-black uppercase tracking-widest text-[#444] hover:text-[#888] transition-colors">
+            Rank
+          </button>
+        </div>
 
-          <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-900/40 border border-purple-500/30 text-purple-300 text-sm font-medium hover:bg-purple-900/60 transition"
-                  >
-                    <ShieldCheck className="h-4 w-4" /> Admin
-                  </Link>
-                )}
+        <div className="flex items-center gap-4">
+          {user ? (
+            <>
+              {isAdmin && (
                 <Link
-                  to="/editor"
-                  className="flex items-center gap-3 bg-white/8 hover:bg-white/15 border border-white/10 hover:border-white/30 pl-1.5 pr-5 py-1 rounded-full transition-all duration-300"
+                  to="/admin"
+                  className="flex items-center gap-1.5 text-xs text-[#555] hover:text-[#f97316] transition-colors uppercase tracking-widest"
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-800 to-gray-700 flex items-center justify-center border border-white/15 overflow-hidden">
-                    <img
-                      src={user.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.id}`}
-                      alt="avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="text-xs font-bold tracking-wide truncate max-w-[110px]">
-                      {user.display_name || user.username}
-                    </span>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">Member</span>
-                  </div>
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Admin
                 </Link>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="text-sm text-gray-300 hover:text-white transition">
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(249,115,22,0.5)] hover:shadow-[0_0_30px_rgba(249,115,22,0.7)]"
-                >
-                  Criar agora
-                </Link>
-              </>
-            )}
-          </div>
+              )}
+              <Link
+                to="/editor"
+                className="flex items-center gap-3 border border-[#1a1a1a] px-3 py-1.5 hover:border-[#f97316]/30 transition-colors"
+              >
+                <img
+                  src={(user as any).avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.id}`}
+                  alt="avatar"
+                  className="w-6 h-6 object-cover grayscale border border-[#1a1a1a]"
+                />
+                <div className="flex flex-col items-start">
+                  <span className="text-[10px] font-black tracking-widest text-white uppercase truncate max-w-[100px]">
+                    {(user as any).display_name || (user as any).username}
+                  </span>
+                  <span className="text-[9px] text-[#444] uppercase tracking-widest">Member</span>
+                </div>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-xs text-[#555] hover:text-[#999] transition-colors uppercase tracking-widest"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="px-5 py-2 bg-[#f97316] text-black text-xs font-black uppercase tracking-widest hover:bg-[#e06210] transition-colors"
+              >
+                Criar agora
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
-      {/* Hero */}
-      <main className="relative z-10 flex-grow pt-20 md:pt-32 pb-24">
-        <div className="container mx-auto px-6 text-center max-w-4xl">
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9 }}>
-            <a
-              href="https://discord.gg/sua-comunidade"
-              target="_blank"
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-blue-950/50 border border-blue-500/30 text-blue-300 text-sm mb-10 hover:bg-blue-950/70 transition"
-            >
-              <Sparkles className="h-4 w-4" /> Entre na comunidade Discord!
-            </a>
+      {/* ════════════════════════════════════════
+          HERO
+      ════════════════════════════════════════ */}
+      <main className="relative z-10 flex-grow">
+        <section className="pt-28 pb-32 px-6 max-w-5xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            {/* Pill */}
+            <div className="inline-flex items-center gap-2 border border-[#1a1a1a] px-4 py-2 text-[10px] uppercase tracking-widest text-[#555] mb-12">
+              <span className="w-1.5 h-1.5 bg-[#f97316] rounded-full" />
+              {totalUsers.toLocaleString()} membros ativos
+            </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-tight mb-6">
-              Sua identidade<br className="hidden sm:block" /> em um link só
+            {/* Headline */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] mb-8 uppercase">
+              Sua identidade<br />
+              <span className="text-[#f97316]">em um link</span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto font-light">
-              Crie sua página personalizada em segundos. Já somos{" "}
-              <span className="text-orange-400 font-bold">{stats.users.toLocaleString()}</span> membros.
+            <p className="text-sm md:text-base text-[#555] mb-14 max-w-lg mx-auto font-mono tracking-wide leading-relaxed">
+              Crie sua página personalizada em segundos.<br />
+              Sem mensalidade. Sem complicação.
             </p>
 
-            <form onSubmit={handleCreate} className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto mb-20">
-              <div className="relative w-full">
-                <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-orange-500 font-bold text-lg">
+            {/* Form */}
+            <form onSubmit={handleCreate} className="flex flex-col md:flex-row gap-0 max-w-lg mx-auto mb-24 border border-[#1a1a1a]">
+              <div className="relative flex-1">
+                <span className="absolute inset-y-0 left-0 pl-5 flex items-center text-[#f97316] text-xs font-black uppercase tracking-widest pointer-events-none">
                   safirahost.xyz/
-                </div>
+                </span>
                 <input
                   type="text"
-                  placeholder="seu nome"
+                  placeholder="seunome"
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value.toLowerCase().replace(/\s+/g, ""))}
-                  className="w-full pl-36 pr-6 py-6 bg-[#0f0f0f] border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/60 focus:ring-2 focus:ring-orange-500/30 transition-all text-xl"
+                  className="w-full pl-36 pr-5 py-5 bg-[#0a0a0a] text-white placeholder-[#2a2a2a] focus:outline-none focus:bg-[#0d0d0d] transition-colors text-sm font-mono"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full md:w-auto px-12 py-6 bg-gradient-to-r from-white to-gray-200 text-black font-black rounded-2xl hover:from-gray-100 hover:to-white transition-all shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] text-lg"
+                className="px-10 py-5 bg-[#f97316] text-black text-xs font-black uppercase tracking-widest hover:bg-[#e06210] transition-colors flex items-center gap-2 justify-center"
               >
                 Criar
+                <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </form>
 
             {/* Marquee usuários */}
             {recentUsers.length > 0 && (
-              <div className="w-full max-w-7xl mx-auto overflow-hidden mb-24">
-                <div className="flex w-max animate-marquee-slow hover:pause">
+              <div className="w-full overflow-hidden border-t border-b border-[#111] py-5 mb-4">
+                <div className="flex w-max" style={{ animation: "marquee 80s linear infinite" }}>
                   {[...recentUsers, ...recentUsers].map((u, i) => (
                     <Link
                       key={`${u.username}-${i}`}
                       to={`/${u.username}`}
-                      className="flex-shrink-0 mx-3"
+                      className="flex-shrink-0 mx-4"
                     >
-                      <div className="flex items-center gap-3 bg-black/50 border border-white/8 rounded-xl p-4 min-w-[240px] hover:bg-black/70 hover:border-orange-500/40 transition-all group">
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-800 border border-white/10 group-hover:border-orange-500/50 transition">
-                          <img
-                            src={u.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${u.username}`}
-                            alt={u.username}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                      <div className="flex items-center gap-2.5 border border-[#1a1a1a] bg-[#0a0a0a] px-4 py-2.5 min-w-[200px] hover:border-[#f97316]/30 transition-colors group">
+                        <img
+                          src={u.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${u.username}`}
+                          alt={u.username}
+                          className="w-8 h-8 object-cover grayscale border border-[#1a1a1a]"
+                        />
                         <div>
-                          <p className="text-gray-100 font-medium truncate max-w-[140px] group-hover:text-white">
+                          <p className="text-xs font-black text-white uppercase tracking-wide truncate max-w-[120px] group-hover:text-[#f97316] transition-colors">
                             {u.display_name || u.username}
                           </p>
-                          <p className="text-gray-500 text-sm truncate max-w-[140px]">
-                            /{u.username}
-                          </p>
+                          <p className="text-[10px] text-[#333] font-mono">/{u.username}</p>
                         </div>
                       </div>
                     </Link>
@@ -196,177 +274,303 @@ const Landing = () => {
               </div>
             )}
           </motion.div>
-        </div>
+        </section>
 
-        {/* Seção Planos / VIP */}
-        <section className="max-w-6xl mx-auto px-6 pb-32">
+        {/* ════════════════════════════════════════
+            STATS BAR
+        ════════════════════════════════════════ */}
+        <section className="border-t border-b border-[#111] bg-[#080808]">
+          <div className="max-w-5xl mx-auto grid grid-cols-3 divide-x divide-[#111]">
+            {[
+              { label: "Membros ativos", value: totalUsers.toLocaleString() },
+              { label: "Perfis criados", value: "100%" },
+              { label: "Custo mensal", value: "R$ 0,00" },
+            ].map((s) => (
+              <div key={s.label} className="px-8 py-8 text-center">
+                <p className="text-3xl md:text-4xl font-black text-white tabular-nums">{s.value}</p>
+                <p className="text-[10px] uppercase tracking-widest text-[#444] mt-2">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ════════════════════════════════════════
+            PLANOS
+        ════════════════════════════════════════ */}
+        <section className="py-32 px-6 max-w-5xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="mb-16"
           >
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">Escolha seu plano</h2>
-            <p className="text-xl text-gray-400">Pague uma vez. Recursos para sempre.</p>
+            <p className="text-[10px] uppercase tracking-widest text-[#f97316] mb-3">Planos</p>
+            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
+              Escolha seu plano
+            </h2>
+            <p className="text-xs text-[#444] mt-3 font-mono">Pague uma vez. Recursos para sempre.</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Plano Grátis */}
+          <div className="grid md:grid-cols-2 gap-px bg-[#111]">
+            {/* Grátis */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 flex flex-col relative overflow-hidden hover:border-white/20 transition-all group"
+              transition={{ delay: 0.1 }}
+              className="bg-[#080808] p-10"
             >
-              <div className="mb-8">
-                <h3 className="text-3xl font-black mb-3">Grátis</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black">R$ 0</span>
-                  <span className="text-gray-500">/vitalício</span>
-                </div>
+              <p className="text-[10px] uppercase tracking-widest text-[#444] mb-6">Plano</p>
+              <h3 className="text-4xl font-black uppercase mb-2">Grátis</h3>
+              <div className="flex items-baseline gap-2 mb-8">
+                <span className="text-5xl font-black text-white">R$ 0</span>
+                <span className="text-xs text-[#444] uppercase tracking-widest">/ vitalício</span>
               </div>
-              <ul className="space-y-4 mb-10 flex-grow">
+
+              <div className="space-y-3 mb-10">
                 {[
                   "Página personalizável básica",
                   "Links ilimitados",
                   "Avatar e bio",
                   "Analytics simples",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-gray-300">
-                    <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center">
-                      <div className="w-2.5 h-2.5 bg-white rounded-full" />
-                    </div>
-                    {item}
-                  </li>
+                  <div key={item} className="flex items-center gap-3">
+                    <span className="text-[#f97316] text-xs font-black">—</span>
+                    <span className="text-xs text-[#666] font-mono uppercase tracking-widest">{item}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
+
               <Link
                 to={user ? "/editor" : "/register"}
-                className="py-5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-center transition-all border border-white/10"
+                className="block w-full py-4 border border-[#1a1a1a] text-center text-xs font-black uppercase tracking-widest text-[#555] hover:border-[#333] hover:text-[#888] transition-colors"
               >
                 Começar grátis
               </Link>
             </motion.div>
 
-            {/* Plano Premium / VIP */}
+            {/* Premium */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="bg-gradient-to-b from-[#1a0f1a] to-[#0a0a0a] border border-orange-500/30 rounded-3xl p-8 flex flex-col relative overflow-hidden group hover:border-orange-500/50 hover:shadow-[0_0_40px_rgba(249,115,22,0.2)] transition-all"
+              transition={{ delay: 0.2 }}
+              className="bg-[#080808] p-10 relative border-l border-[#f97316]/20"
             >
-              <div className="absolute top-6 right-6 px-4 py-1 bg-orange-600/20 border border-orange-500/40 rounded-full text-orange-300 text-xs font-bold">
+              <div className="absolute top-6 right-6 border border-[#f97316]/30 px-3 py-1 text-[9px] uppercase tracking-widest text-[#f97316]/70 font-mono">
                 Mais popular
               </div>
 
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="mb-8 relative z-10">
-                <h3 className="text-3xl font-black mb-3 text-orange-300">Premium</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black">R$ 29,90</span>
-                  <span className="text-gray-500">/vitalício</span>
-                </div>
-                <p className="text-orange-200/80 text-sm mt-1 font-medium">Pague uma vez. Fique para sempre.</p>
+              <p className="text-[10px] uppercase tracking-widest text-[#f97316] mb-6">Plano</p>
+              <h3 className="text-4xl font-black uppercase mb-2 text-[#f97316]">Premium</h3>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-5xl font-black text-white">R$ 29,90</span>
+                <span className="text-xs text-[#444] uppercase tracking-widest">/ vitalício</span>
               </div>
+              <p className="text-[10px] text-[#f97316]/60 font-mono mb-8 uppercase tracking-widest">
+                Pague uma vez. Fique para sempre.
+              </p>
 
-              <ul className="space-y-4 mb-10 flex-grow relative z-10">
+              <div className="space-y-3 mb-10">
                 {[
                   "Tudo do Grátis +",
                   "Badges exclusivos",
-                  "Efeitos animados (partículas, glows, etc)",
-                  "Vídeo/música de fundo",
-                  "Mais layouts e fontes custom",
-                  "Prioridade no suporte",
+                  "Efeitos animados",
+                  "Vídeo / música de fundo",
+                  "Layouts e fontes custom",
+                  "Suporte prioritário",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-gray-200">
-                    <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center">
-                      <div className="w-2.5 h-2.5 bg-orange-400 rounded-full" />
-                    </div>
-                    {item}
-                  </li>
+                  <div key={item} className="flex items-center gap-3">
+                    <span className="text-[#f97316] text-xs font-black">—</span>
+                    <span className="text-xs text-[#666] font-mono uppercase tracking-widest">{item}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
 
               <button
                 disabled
-                className="py-5 rounded-2xl bg-orange-600/40 text-orange-200 font-bold text-center cursor-not-allowed opacity-70 border border-orange-500/30 relative z-10"
+                className="w-full py-4 bg-[#f97316]/10 border border-[#f97316]/20 text-[#f97316]/50 text-xs font-black uppercase tracking-widest cursor-not-allowed"
               >
-                Em breve (pague uma vez)
+                Em breve
               </button>
             </motion.div>
           </div>
         </section>
+
+        {/* ════════════════════════════════════════
+            BADGE SHOP
+        ════════════════════════════════════════ */}
+        <section className="py-32 px-6 max-w-5xl mx-auto border-t border-[#111]">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-16"
+          >
+            <p className="text-[10px] uppercase tracking-widest text-[#f97316] mb-3">Loja</p>
+            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">
+              Badges
+            </h2>
+            <p className="text-xs text-[#444] mt-3 font-mono leading-relaxed">
+              Destaque seu perfil com badges exclusivos.<br />
+              Cada badge conta uma história — conquistas, status, identidade.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#111]">
+            {BADGE_SHOP.map((badge, i) => (
+              <motion.div
+                key={badge.id}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+                className="bg-[#080808] p-7 flex flex-col gap-5 relative group hover:bg-[#0a0a0a] transition-colors"
+              >
+                {/* Ícone */}
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-12 h-12 border flex items-center justify-center text-xl font-black"
+                    style={{ borderColor: `${badge.accent}30`, color: badge.accent, background: `${badge.accent}08` }}
+                  >
+                    {badge.icon}
+                  </div>
+                  <div>
+                    <p
+                      className="text-sm font-black uppercase tracking-widest"
+                      style={{ color: badge.accent }}
+                    >
+                      {badge.name}
+                    </p>
+                    <p className="text-[10px] text-[#333] font-mono uppercase tracking-widest mt-0.5">
+                      {badge.priceNote}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Descrição */}
+                <p className="text-xs text-[#444] font-mono leading-relaxed flex-1">
+                  {badge.description}
+                </p>
+
+                {/* Divider */}
+                <div className="border-t border-[#111]" />
+
+                {/* Preço + Botão */}
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-black text-white tabular-nums">
+                    {badge.price}
+                  </span>
+
+                  <button
+                    disabled
+                    className="flex items-center gap-2 px-4 py-2 border text-[10px] font-black uppercase tracking-widest cursor-not-allowed opacity-40 transition-colors"
+                    style={{ borderColor: `${badge.accent}30`, color: badge.accent }}
+                  >
+                    <Lock className="h-3 w-3" />
+                    Em breve
+                  </button>
+                </div>
+
+                {/* Corner accent */}
+                <div
+                  className="absolute top-0 right-0 w-0 h-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    borderTop: `24px solid ${badge.accent}20`,
+                    borderLeft: "24px solid transparent",
+                  }}
+                />
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Info bar */}
+          <div className="mt-px bg-[#080808] border border-[#111] border-t-0 px-7 py-5 flex items-center gap-3">
+            <span className="w-1.5 h-1.5 bg-[#f97316] rounded-full flex-shrink-0" />
+            <p className="text-[10px] text-[#333] font-mono uppercase tracking-widest">
+              Todas as badges serão liberadas para compra em breve. Acompanhe nosso Discord para atualizações.
+            </p>
+          </div>
+        </section>
+
+        {/* ════════════════════════════════════════
+            CTA FINAL
+        ════════════════════════════════════════ */}
+        <section className="py-32 px-6 border-t border-[#111]">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <p className="text-[10px] uppercase tracking-widest text-[#f97316] mb-6">Pronto?</p>
+            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 leading-[0.9]">
+              Crie seu perfil<br />agora mesmo
+            </h2>
+            <p className="text-xs text-[#444] font-mono mb-12 uppercase tracking-widest">
+              Grátis. Sem cartão. Sem mensalidade.
+            </p>
+            <Link
+              to={user ? "/editor" : "/register"}
+              className="inline-flex items-center gap-3 px-10 py-5 bg-[#f97316] text-black text-xs font-black uppercase tracking-widest hover:bg-[#e06210] transition-colors"
+            >
+              {user ? "Ir para o editor" : "Criar minha página"}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </motion.div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-white/5 bg-[#050505] pt-16 pb-12">
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-12">
+      {/* ════════════════════════════════════════
+          FOOTER
+      ════════════════════════════════════════ */}
+      <footer className="relative z-10 border-t border-[#111] bg-[#080808] pt-16 pb-10">
+        <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-4 gap-10 mb-12">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <Gem className="h-8 w-8 text-orange-500" />
-              <span className="text-2xl font-black">Safira</span>
+            <div className="flex items-center gap-2 mb-4">
+              <Gem className="h-5 w-5 text-[#f97316]" />
+              <span className="font-black text-lg tracking-widest text-[#f97316] uppercase">Safira</span>
             </div>
-            <p className="text-gray-500 text-sm">Sua bio moderna e cheia de estilo.</p>
+            <p className="text-[10px] text-[#333] font-mono uppercase tracking-widest leading-relaxed">
+              Sua bio moderna<br />e cheia de estilo.
+            </p>
           </div>
 
           <div>
-            <h4 className="text-white font-bold mb-4">Links rápidos</h4>
-            <ul className="space-y-2 text-gray-400 text-sm">
-              <li><Link to="/login" className="hover:text-white">Entrar</Link></li>
-              <li><Link to="/register" className="hover:text-white">Cadastrar</Link></li>
+            <h4 className="text-[10px] uppercase tracking-widest text-[#444] font-black mb-5">Plataforma</h4>
+            <ul className="space-y-3 text-[10px] font-mono uppercase tracking-widest">
+              <li><Link to="/login"    className="text-[#333] hover:text-[#888] transition-colors">Entrar</Link></li>
+              <li><Link to="/register" className="text-[#333] hover:text-[#888] transition-colors">Cadastrar</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-bold mb-4">Comunidade</h4>
-            <ul className="space-y-2 text-gray-400 text-sm">
-              <li><a href="https://discord.gg/..." className="hover:text-white">Discord</a></li>
+            <h4 className="text-[10px] uppercase tracking-widest text-[#444] font-black mb-5">Comunidade</h4>
+            <ul className="space-y-3 text-[10px] font-mono uppercase tracking-widest">
+              <li><a href="https://discord.gg/..." className="text-[#333] hover:text-[#888] transition-colors">Discord</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-bold mb-4">Legal</h4>
-            <ul className="space-y-2 text-gray-400 text-sm">
-              <li><a href="/terms" className="hover:text-white">Termos</a></li>
-              <li><a href="/privacy" className="hover:text-white">Privacidade</a></li>
+            <h4 className="text-[10px] uppercase tracking-widest text-[#444] font-black mb-5">Legal</h4>
+            <ul className="space-y-3 text-[10px] font-mono uppercase tracking-widest">
+              <li><a href="/terms"   className="text-[#333] hover:text-[#888] transition-colors">Termos</a></li>
+              <li><a href="/privacy" className="text-[#333] hover:text-[#888] transition-colors">Privacidade</a></li>
             </ul>
           </div>
         </div>
 
-        <div className="text-center text-gray-600 text-sm border-t border-white/5 pt-8">
-          © 2026 Safira.gg — Todos os direitos reservados.
+        <div className="border-t border-[#111] pt-8 text-center">
+          <p className="text-[10px] text-[#222] font-mono uppercase tracking-widest">
+            © 2026 Safira — Todos os direitos reservados.
+          </p>
         </div>
       </footer>
 
-      {/* Estilos globais necessários */}
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
-          50% { transform: translate(40px, -40px) scale(1.15); opacity: 0.9; }
-        }
-        .moving-light {
-          position: absolute;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(249,115,22,0.25) 0%, transparent 70%);
-          filter: blur(80px);
-          animation: float infinite ease-in-out;
-        }
-        .animate-marquee-slow {
-          animation: marquee 80s linear infinite;
-        }
         @keyframes marquee {
           from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-        .pause:hover .animate-marquee-slow { animation-play-state: paused; }
-        .bg-grid {
-          background-image: 
-            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-          background-size: 50px 50px;
+          to   { transform: translateX(-50%); }
         }
       `}</style>
     </div>

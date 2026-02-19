@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
   Users, Eye, ShieldAlert, BarChart3, Search,
   Ban, CheckCircle, Clock, Gem,
@@ -24,13 +23,17 @@ const Admin = () => {
   const [grantUserId, setGrantUserId] = useState<string | null>(null);
   const [grantBadgeId, setGrantBadgeId] = useState("");
 
-  // For viewing/removing user badges
   const [viewBadgesUserId, setViewBadgesUserId] = useState<string | null>(null);
   const [viewBadgesUserName, setViewBadgesUserName] = useState("");
   const [userBadgesList, setUserBadgesList] = useState<any[]>([]);
 
-  useEffect(() => { if (!authLoading && (!user || !isAdmin)) navigate("/"); }, [user, isAdmin, authLoading]);
-  useEffect(() => { if (user && isAdmin) fetchData(); }, [user, isAdmin]);
+  useEffect(() => {
+    if (!authLoading && (!user || !isAdmin)) navigate("/");
+  }, [user, isAdmin, authLoading]);
+
+  useEffect(() => {
+    if (user && isAdmin) fetchData();
+  }, [user, isAdmin]);
 
   const fetchData = async () => {
     const { data: profiles } = await supabase.from("profiles").select("*");
@@ -38,8 +41,8 @@ const Admin = () => {
       setUsers(profiles);
       setStats({
         total: profiles.length,
-        active: profiles.filter(p => !p.is_banned).length,
-        banned: profiles.filter(p => p.is_banned).length,
+        active: profiles.filter((p) => !p.is_banned).length,
+        banned: profiles.filter((p) => p.is_banned).length,
         totalViews: profiles.reduce((s, p) => s + (p.views || 0), 0),
       });
     }
@@ -65,7 +68,9 @@ const Admin = () => {
 
   const grantBadge = async () => {
     if (!grantUserId || !grantBadgeId) return;
-    const { error } = await supabase.from("user_badges").insert({ user_id: grantUserId, badge_id: grantBadgeId });
+    const { error } = await supabase
+      .from("user_badges")
+      .insert({ user_id: grantUserId, badge_id: grantBadgeId });
     if (error) { toast.error(error.message); return; }
     toast.success("Badge concedida!");
     setGrantUserId(null);
@@ -75,7 +80,10 @@ const Admin = () => {
   const openUserBadges = async (userId: string, name: string) => {
     setViewBadgesUserId(userId);
     setViewBadgesUserName(name);
-    const { data } = await supabase.from("user_badges").select("*, badges(*)").eq("user_id", userId);
+    const { data } = await supabase
+      .from("user_badges")
+      .select("*, badges(*)")
+      .eq("user_id", userId);
     setUserBadgesList(data || []);
   };
 
@@ -83,138 +91,219 @@ const Admin = () => {
     await supabase.from("user_badges").delete().eq("id", userBadgeId);
     toast.success("Badge removida!");
     if (viewBadgesUserId) {
-      const { data } = await supabase.from("user_badges").select("*, badges(*)").eq("user_id", viewBadgesUserId);
+      const { data } = await supabase
+        .from("user_badges")
+        .select("*, badges(*)")
+        .eq("user_id", viewBadgesUserId);
       setUserBadgesList(data || []);
     }
   };
 
   const filteredUsers = users.filter(
-    u => (u.username || "").includes(search.toLowerCase()) || (u.display_name || "").toLowerCase().includes(search.toLowerCase())
+    (u) =>
+      (u.username || "").includes(search.toLowerCase()) ||
+      (u.display_name || "").toLowerCase().includes(search.toLowerCase())
   );
 
   if (authLoading) return null;
 
   const statCards = [
-    { label: "Total Usuários", value: stats.total.toLocaleString(), icon: <Users className="h-5 w-5" />, color: "text-primary" },
-    { label: "Ativos", value: stats.active.toLocaleString(), icon: <Eye className="h-5 w-5" />, color: "text-online" },
-    { label: "Banidos", value: stats.banned.toLocaleString(), icon: <ShieldAlert className="h-5 w-5" />, color: "text-destructive" },
-    { label: "Total Views", value: stats.totalViews.toLocaleString(), icon: <BarChart3 className="h-5 w-5" />, color: "text-accent" },
+    { label: "Total Usuários",  value: stats.total.toLocaleString(),      icon: <Users className="h-4 w-4" />,      accent: "#f97316" },
+    { label: "Ativos",          value: stats.active.toLocaleString(),     icon: <Eye className="h-4 w-4" />,        accent: "#10b981" },
+    { label: "Banidos",         value: stats.banned.toLocaleString(),     icon: <ShieldAlert className="h-4 w-4" />, accent: "#ef4444" },
+    { label: "Total Views",     value: stats.totalViews.toLocaleString(), icon: <BarChart3 className="h-4 w-4" />,  accent: "#8b5cf6" },
   ];
 
   const sidebarItems = [
-    { id: "overview" as const, icon: <BarChart3 className="h-4 w-4" />, label: "Dashboard" },
-    { id: "users" as const, icon: <Users className="h-4 w-4" />, label: "Usuários" },
-    { id: "badges" as const, icon: <Award className="h-4 w-4" />, label: "Badges" },
-    { id: "reports" as const, icon: <ShieldAlert className="h-4 w-4" />, label: "Denúncias" },
+    { id: "overview" as const, icon: <BarChart3 className="h-3.5 w-3.5" />, label: "Dashboard"  },
+    { id: "users"    as const, icon: <Users    className="h-3.5 w-3.5" />, label: "Usuários"   },
+    { id: "badges"   as const, icon: <Award    className="h-3.5 w-3.5" />, label: "Badges"     },
+    { id: "reports"  as const, icon: <ShieldAlert className="h-3.5 w-3.5" />, label: "Denúncias" },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border px-6 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-[#050505] text-white font-mono">
+
+      {/* ── HEADER ── */}
+      <header className="border-b border-[#1a1a1a] px-6 py-3 flex items-center justify-between bg-[#080808] sticky top-0 z-50">
         <Link to="/" className="flex items-center gap-2">
-          <Gem className="h-5 w-5 text-primary" /><span className="font-bold gradient-text">Safira</span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold uppercase tracking-wider">Admin</span>
+          <Gem className="h-5 w-5 text-[#f97316]" />
+          <span className="font-black text-lg tracking-widest text-[#f97316] uppercase">Safira</span>
+          <span className="text-[9px] px-2 py-0.5 border border-[#f97316]/30 text-[#f97316]/70 uppercase tracking-widest">
+            Admin
+          </span>
         </Link>
-        <div className="flex items-center gap-3">
-          <Link to="/editor" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Editor</Link>
-          <button onClick={() => { signOut(); navigate("/"); }} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
-            <LogOut className="h-4 w-4" /> Sair
+
+        <div className="flex items-center gap-4">
+          <Link
+            to="/editor"
+            className="text-xs text-[#555] hover:text-[#999] transition-colors uppercase tracking-widest"
+          >
+            Editor
+          </Link>
+          <button
+            onClick={() => { signOut(); navigate("/"); }}
+            className="flex items-center gap-2 text-xs text-[#555] hover:text-[#999] transition-colors uppercase tracking-widest"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Sair
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="flex min-h-[calc(100vh-57px)]">
-        {/* Sidebar */}
-        <div className="w-52 border-r border-border p-3 space-y-1">
-          {sidebarItems.map(item => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === item.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
-              }`}>
-              {item.icon} {item.label}
+      <div className="flex min-h-[calc(100vh-49px)]">
+
+        {/* ── SIDEBAR ── */}
+        <div className="w-48 border-r border-[#1a1a1a] bg-[#080808] p-3 space-y-0.5 flex-shrink-0">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-xs uppercase tracking-widest font-black transition-colors ${
+                activeTab === item.id
+                  ? "text-[#f97316] border-l-2 border-[#f97316] pl-[10px] bg-[#f97316]/5"
+                  : "text-[#444] hover:text-[#888] border-l-2 border-transparent pl-[10px]"
+              }`}
+            >
+              {item.icon}
+              {item.label}
             </button>
           ))}
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 p-6 overflow-auto">
-          {/* Overview */}
+        {/* ── MAIN CONTENT ── */}
+        <div className="flex-1 p-8 overflow-auto">
+
+          {/* ═══════════════════════════════════════
+              OVERVIEW / DASHBOARD
+          ═══════════════════════════════════════ */}
           {activeTab === "overview" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              <h2 className="text-xl font-bold">Dashboard</h2>
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-[10px] uppercase tracking-widest text-[#f97316] mb-1">Dashboard</h2>
+                <p className="text-xs text-[#333] font-mono">Visão geral da plataforma</p>
+              </div>
+
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {statCards.map(s => (
-                  <div key={s.label} className="rounded-xl border border-border bg-card p-5 space-y-2">
-                    <span className={`${s.color}`}>{s.icon}</span>
-                    <p className="text-2xl font-bold">{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
+                {statCards.map((s) => (
+                  <div
+                    key={s.label}
+                    className="border border-[#1a1a1a] bg-[#0a0a0a] p-5 space-y-3"
+                  >
+                    <span style={{ color: s.accent }}>{s.icon}</span>
+                    <p className="text-3xl font-black text-white tabular-nums">{s.value}</p>
+                    <p className="text-[10px] uppercase tracking-widest text-[#444]">{s.label}</p>
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           )}
 
-          {/* Users */}
+          {/* ═══════════════════════════════════════
+              USERS
+          ═══════════════════════════════════════ */}
           {activeTab === "users" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Usuários</h2>
+                <div>
+                  <h2 className="text-[10px] uppercase tracking-widest text-[#f97316] mb-1">Usuários</h2>
+                  <p className="text-xs text-[#333] font-mono">{filteredUsers.length} registros</p>
+                </div>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..."
-                    className="pl-9 pr-4 py-2 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-64" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#444]" />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar usuário..."
+                    className="pl-9 pr-4 py-2.5 bg-[#0d0d0d] border border-[#1a1a1a] text-xs text-white placeholder-[#333] focus:border-[#f97316] outline-none font-mono w-56 transition-colors"
+                  />
                 </div>
               </div>
-              <div className="rounded-xl border border-border bg-card overflow-hidden">
+
+              <div className="border border-[#1a1a1a] overflow-hidden">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border text-xs text-muted-foreground">
-                      <th className="text-left px-4 py-3 font-medium">Usuário</th>
-                      <th className="text-left px-4 py-3 font-medium">Status</th>
-                      <th className="text-left px-4 py-3 font-medium">Views</th>
-                      <th className="px-4 py-3 font-medium text-right">Ações</th>
+                    <tr className="border-b border-[#1a1a1a] bg-[#080808]">
+                      <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-[#444] font-black">Usuário</th>
+                      <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-[#444] font-black">Status</th>
+                      <th className="text-left px-4 py-3 text-[10px] uppercase tracking-widest text-[#444] font-black">Views</th>
+                      <th className="text-right px-4 py-3 text-[10px] uppercase tracking-widest text-[#444] font-black">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.map(u => (
-                      <tr key={u.id} className="border-b border-border/50 hover:bg-surface-hover transition-colors">
+                    {filteredUsers.map((u) => (
+                      <tr
+                        key={u.id}
+                        className="border-b border-[#111] hover:bg-[#0a0a0a] transition-colors"
+                      >
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <img src={u.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${u.user_id}`} className="h-9 w-9 rounded-full object-cover" />
+                            <img
+                              src={u.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${u.user_id}`}
+                              className="h-8 w-8 object-cover border border-[#1a1a1a] grayscale"
+                            />
                             <div>
-                              <p className="text-sm font-medium flex items-center gap-1">
+                              <p className="text-xs font-black text-white flex items-center gap-1.5">
                                 {u.display_name || u.username}
-                                {u.is_verified && <CheckCircle className="h-3 w-3 text-badge-verified" />}
+                                {u.is_verified && (
+                                  <CheckCircle className="h-3 w-3 text-[#f97316]" />
+                                )}
                               </p>
-                              <p className="text-xs text-muted-foreground">@{u.username}</p>
+                              <p className="text-[10px] text-[#444] font-mono">@{u.username}</p>
                             </div>
                           </div>
                         </td>
+
                         <td className="px-4 py-3">
-                          <span className={`text-xs flex items-center gap-1 ${u.is_banned ? "text-destructive" : "text-online"}`}>
-                            {u.is_banned ? <Ban className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
+                          <span
+                            className={`text-[10px] uppercase tracking-widest flex items-center gap-1.5 font-mono ${
+                              u.is_banned ? "text-red-500" : "text-[#10b981]"
+                            }`}
+                          >
+                            {u.is_banned
+                              ? <Ban className="h-3 w-3" />
+                              : <CheckCircle className="h-3 w-3" />}
                             {u.is_banned ? "Banido" : "Ativo"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{(u.views || 0).toLocaleString()}</td>
+
+                        <td className="px-4 py-3 text-xs text-[#555] font-mono tabular-nums">
+                          {(u.views || 0).toLocaleString()}
+                        </td>
+
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center gap-1 justify-end">
-                            <button onClick={() => toggleVerified(u)} title={u.is_verified ? "Remover verificação" : "Verificar"}
-                              className={`p-1.5 rounded text-xs ${u.is_verified ? "text-badge-verified" : "text-muted-foreground"} hover:bg-surface transition-colors`}>
-                              <Shield className="h-4 w-4" />
+                            <button
+                              onClick={() => toggleVerified(u)}
+                              title={u.is_verified ? "Remover verificação" : "Verificar"}
+                              className={`p-1.5 border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors ${
+                                u.is_verified ? "text-[#f97316]" : "text-[#333] hover:text-[#666]"
+                              }`}
+                            >
+                              <Shield className="h-3.5 w-3.5" />
                             </button>
-                            <button onClick={() => toggleBan(u)} title={u.is_banned ? "Desbanir" : "Banir"}
-                              className={`p-1.5 rounded text-xs ${u.is_banned ? "text-online" : "text-destructive"} hover:bg-surface transition-colors`}>
-                              <Ban className="h-4 w-4" />
+                            <button
+                              onClick={() => toggleBan(u)}
+                              title={u.is_banned ? "Desbanir" : "Banir"}
+                              className={`p-1.5 border border-[#1a1a1a] hover:border-[#2a2a2a] transition-colors ${
+                                u.is_banned ? "text-[#10b981]" : "text-red-500/70 hover:text-red-500"
+                              }`}
+                            >
+                              <Ban className="h-3.5 w-3.5" />
                             </button>
-                            <button onClick={() => setGrantUserId(u.user_id)} title="Dar badge"
-                              className="p-1.5 rounded text-xs text-primary hover:bg-surface transition-colors">
-                              <Award className="h-4 w-4" />
+                            <button
+                              onClick={() => setGrantUserId(u.user_id)}
+                              title="Dar badge"
+                              className="p-1.5 border border-[#1a1a1a] hover:border-[#f97316]/30 text-[#333] hover:text-[#f97316] transition-colors"
+                            >
+                              <Award className="h-3.5 w-3.5" />
                             </button>
-                            <button onClick={() => openUserBadges(u.user_id, u.display_name || u.username)} title="Ver/remover badges"
-                              className="p-1.5 rounded text-xs text-muted-foreground hover:text-destructive hover:bg-surface transition-colors">
-                              <Trash2 className="h-4 w-4" />
+                            <button
+                              onClick={() => openUserBadges(u.user_id, u.display_name || u.username)}
+                              title="Ver/remover badges"
+                              className="p-1.5 border border-[#1a1a1a] hover:border-red-900/40 text-[#333] hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         </td>
@@ -222,108 +311,205 @@ const Admin = () => {
                     ))}
                   </tbody>
                 </table>
+
+                {filteredUsers.length === 0 && (
+                  <div className="py-14 text-center">
+                    <p className="text-[#333] text-xs uppercase tracking-widest">Nenhum usuário encontrado</p>
+                  </div>
+                )}
               </div>
 
-              {/* Grant Badge Modal */}
+              {/* ── MODAL: Conceder Badge ── */}
               {grantUserId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm" onClick={() => setGrantUserId(null)}>
-                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                    className="rounded-2xl border border-border bg-card p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+                  onClick={() => setGrantUserId(null)}
+                >
+                  <div
+                    className="bg-[#0a0a0a] border border-[#1a1a1a] p-6 w-full max-w-sm space-y-5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-bold">Conceder Badge</h3>
-                      <button onClick={() => setGrantUserId(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+                      <h3 className="text-[10px] uppercase tracking-widest text-[#f97316] font-black">
+                        Conceder Badge
+                      </h3>
+                      <button
+                        onClick={() => setGrantUserId(null)}
+                        className="text-[#444] hover:text-[#888] transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-                    <select value={grantBadgeId} onChange={e => setGrantBadgeId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-surface border border-border text-sm">
+
+                    <select
+                      value={grantBadgeId}
+                      onChange={(e) => setGrantBadgeId(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#111] border border-[#1a1a1a] text-sm text-white focus:border-[#f97316] outline-none font-mono transition-colors"
+                    >
                       <option value="">Selecionar badge...</option>
-                      {allBadges.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                      {allBadges.map((b) => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
+                      ))}
                     </select>
+
                     <div className="flex gap-2">
-                      <button onClick={() => setGrantUserId(null)} className="flex-1 px-4 py-2 rounded-lg border border-border text-sm hover:bg-surface transition-colors">Cancelar</button>
-                      <button onClick={grantBadge} disabled={!grantBadgeId} className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50">Conceder</button>
+                      <button
+                        onClick={() => setGrantUserId(null)}
+                        className="flex-1 px-4 py-2.5 border border-[#1a1a1a] text-xs text-[#555] hover:text-[#888] uppercase tracking-widest transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={grantBadge}
+                        disabled={!grantBadgeId}
+                        className="flex-1 px-4 py-2.5 bg-[#f97316] text-black text-xs font-black uppercase tracking-widest hover:bg-[#e06210] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Conceder
+                      </button>
                     </div>
-                  </motion.div>
+                  </div>
                 </div>
               )}
 
-              {/* View/Remove Badges Modal */}
+              {/* ── MODAL: Ver/Remover Badges ── */}
               {viewBadgesUserId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm" onClick={() => setViewBadgesUserId(null)}>
-                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                    className="rounded-2xl border border-border bg-card p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+                  onClick={() => setViewBadgesUserId(null)}
+                >
+                  <div
+                    className="bg-[#0a0a0a] border border-[#1a1a1a] p-6 w-full max-w-sm space-y-5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-bold">Badges de {viewBadgesUserName}</h3>
-                      <button onClick={() => setViewBadgesUserId(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+                      <div>
+                        <h3 className="text-[10px] uppercase tracking-widest text-[#f97316] font-black">
+                          Badges
+                        </h3>
+                        <p className="text-xs text-[#444] font-mono mt-0.5">{viewBadgesUserName}</p>
+                      </div>
+                      <button
+                        onClick={() => setViewBadgesUserId(null)}
+                        className="text-[#444] hover:text-[#888] transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
+
                     {userBadgesList.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">Sem badges.</p>
+                      <p className="text-xs text-[#333] text-center py-6 uppercase tracking-widest font-mono">
+                        Sem badges.
+                      </p>
                     ) : (
                       <div className="space-y-2 max-h-64 overflow-auto">
                         {userBadgesList.map((ub: any) => (
-                          <div key={ub.id} className="flex items-center gap-3 p-2 rounded-lg bg-surface border border-border">
+                          <div
+                            key={ub.id}
+                            className="flex items-center gap-3 p-3 border border-[#1a1a1a] bg-[#111] hover:border-[#2a2a2a] transition-colors"
+                          >
                             <BadgeIcon icon={ub.badges.icon} color={ub.badges.color} size={18} />
-                            <span className="text-sm font-medium flex-1">{ub.badges.name}</span>
-                            <button onClick={() => removeBadge(ub.id)}
-                              className="p-1 rounded text-destructive hover:bg-destructive/10 transition-colors" title="Remover">
+                            <span className="text-xs font-mono text-white flex-1">{ub.badges.name}</span>
+                            <button
+                              onClick={() => removeBadge(ub.id)}
+                              className="p-1.5 border border-[#1a1a1a] hover:border-red-900/40 text-[#444] hover:text-red-500 transition-colors"
+                              title="Remover"
+                            >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         ))}
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
 
-          {/* Reports */}
+          {/* ═══════════════════════════════════════
+              REPORTS / DENÚNCIAS
+          ═══════════════════════════════════════ */}
           {activeTab === "reports" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-              <h2 className="text-xl font-bold">Denúncias</h2>
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-[10px] uppercase tracking-widest text-[#f97316] mb-1">Denúncias</h2>
+                <p className="text-xs text-[#333] font-mono">{reports.length} registros</p>
+              </div>
+
               {reports.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma denúncia ainda.</p>
+                <div className="text-center py-14 border border-dashed border-[#1a1a1a]">
+                  <p className="text-[#333] text-xs uppercase tracking-widest">Nenhuma denúncia ainda</p>
+                </div>
               ) : (
-                <div className="space-y-3">
-                  {reports.map(r => (
-                    <div key={r.id} className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
+                <div className="space-y-2">
+                  {reports.map((r) => (
+                    <div
+                      key={r.id}
+                      className="border border-[#1a1a1a] bg-[#0a0a0a] p-4 flex items-center justify-between hover:border-[#2a2a2a] transition-colors"
+                    >
                       <div className="space-y-1">
-                        <p className="text-sm">{r.reason}</p>
-                        <p className="text-xs text-muted-foreground">#{r.id.slice(0, 8)}</p>
+                        <p className="text-sm text-white font-mono">{r.reason}</p>
+                        <p className="text-[10px] text-[#333] font-mono">#{r.id.slice(0, 8)}</p>
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1 ${
-                        r.status === "pending" ? "bg-idle/10 text-idle" : "bg-online/10 text-online"
-                      }`}>
-                        {r.status === "pending" ? <Clock className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
+                      <span
+                        className={`text-[10px] uppercase tracking-widest flex items-center gap-1.5 font-mono px-3 py-1.5 border ${
+                          r.status === "pending"
+                            ? "border-yellow-900/40 text-yellow-600"
+                            : "border-[#10b981]/20 text-[#10b981]"
+                        }`}
+                      >
+                        {r.status === "pending"
+                          ? <Clock className="h-3 w-3" />
+                          : <CheckCircle className="h-3 w-3" />}
                         {r.status}
                       </span>
                     </div>
                   ))}
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
 
-          {/* Badges */}
+          {/* ═══════════════════════════════════════
+              BADGES
+          ═══════════════════════════════════════ */}
           {activeTab === "badges" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-              <h2 className="text-xl font-bold">Badges</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {allBadges.map(badge => (
-                  <div key={badge.id} className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-                    <BadgeIcon icon={badge.icon} color={badge.color} size={24} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{badge.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{badge.description}</p>
-                    </div>
-                    {badge.is_special && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Especial</span>
-                    )}
-                  </div>
-                ))}
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-[10px] uppercase tracking-widest text-[#f97316] mb-1">Badges</h2>
+                <p className="text-xs text-[#333] font-mono">{allBadges.length} registros</p>
               </div>
-            </motion.div>
+
+              {allBadges.length === 0 ? (
+                <div className="text-center py-14 border border-dashed border-[#1a1a1a]">
+                  <p className="text-[#333] text-xs uppercase tracking-widest">Nenhuma badge cadastrada</p>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {allBadges.map((badge) => (
+                    <div
+                      key={badge.id}
+                      className="border border-[#1a1a1a] bg-[#0a0a0a] p-4 flex items-center gap-3 hover:border-[#2a2a2a] transition-colors"
+                    >
+                      <BadgeIcon icon={badge.icon} color={badge.color} size={24} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-black text-white font-mono">{badge.name}</p>
+                        <p className="text-[10px] text-[#444] truncate font-mono mt-0.5">
+                          {badge.description}
+                        </p>
+                      </div>
+                      {badge.is_special && (
+                        <span className="text-[9px] px-2 py-0.5 border border-[#f97316]/30 text-[#f97316]/70 uppercase tracking-widest font-mono">
+                          Especial
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
+
         </div>
       </div>
     </div>
