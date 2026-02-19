@@ -253,7 +253,7 @@ const CyberpunkContent = ({ profile, copied, copyDiscord }: { profile: ProfileDa
         <div className="w-full h-full bg-gradient-to-r from-primary via-accent to-primary animate-gradient-shift" style={{ backgroundSize: "200% 200%" }} />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card" />
-      <div className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono rounded bg-primary/20 border border-primary/40 text-primary">SAFIRA.APP</div>
+      <div className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono rounded bg-primary/20 border border-primary/40 text-primary">safirahost.xyz</div>
     </div>
     <div className="bg-card/90 backdrop-blur-xl border-t border-primary/30 px-6 pb-6">
       <div className="flex items-end gap-4 -mt-10 mb-4">

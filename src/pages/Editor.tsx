@@ -230,7 +230,7 @@ const Editor = () => {
                 <div>
                   <label className="text-sm font-medium text-muted-foreground mb-1 block">Username</label>
                   <div className="flex items-center gap-0">
-                    <span className="px-3 py-2 rounded-l-lg bg-muted border border-r-0 border-border text-sm text-muted-foreground">safira.app/</span>
+                    <span className="px-3 py-2 rounded-l-lg bg-muted border border-r-0 border-border text-sm text-muted-foreground">safirahost.xyz/</span>
                     <input value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                       className="flex-1 px-3 py-2 rounded-r-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
                   </div>
