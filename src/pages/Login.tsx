@@ -30,8 +30,10 @@ const Login = () => {
     <div className="min-h-screen animated-gradient-bg flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <Gem className="h-5 w-5 text-primary" />
-          <span className="font-bold gradient-text">Safira</span>
+          <Gem className="h-5 w-5" style={{ color: "rgb(249 115 22)" }} />
+          <span className="font-bold" style={{ background: "linear-gradient(90deg, rgb(249 115 22), rgb(251 191 36))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            Safira
+          </span>
         </Link>
       </div>
 
@@ -53,7 +55,8 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2"
+              style={{ focusRingColor: "rgb(249 115 22 / 0.5)" }}
               placeholder="you@example.com"
             />
           </div>
@@ -65,10 +68,15 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 pr-10"
+                className="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 pr-10"
+                style={{ focusRingColor: "rgb(249 115 22 / 0.5)" }}
                 placeholder="••••••••"
               />
-              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <button
+                type="button"
+                onClick={() => setShowPw(!showPw)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
@@ -79,7 +87,8 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full py-2.5 rounded-lg text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+            style={{ backgroundColor: "rgb(249 115 22)" }}
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
@@ -87,7 +96,7 @@ const Login = () => {
 
         <p className="text-center text-sm text-muted-foreground">
           Não tem conta?{" "}
-          <Link to="/register" className="text-primary hover:underline">Criar conta</Link>
+          <Link to="/register" className="hover:underline" style={{ color: "rgb(249 115 22)" }}>Criar conta</Link>
         </p>
       </motion.div>
     </div>

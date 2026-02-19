@@ -82,10 +82,10 @@ const useTilt = () => {
   return { ref, style, handleMouseMove, handleMouseLeave };
 };
 
-// Music player
+// Music player - AGORA COMEÇA TOCANDO AUTOMATICAMENTE
 const MusicPlayer = ({ songUrl }: { songUrl: string }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying] = useState(true); // Começa como true = tocando
 
   const toggle = () => {
     if (!audioRef.current) return;
@@ -97,20 +97,43 @@ const MusicPlayer = ({ songUrl }: { songUrl: string }) => {
     setPlaying(!playing);
   };
 
+  // Toca automaticamente ao montar
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {
+        // Alguns navegadores bloqueiam autoplay sem interação
+        // Se falhar, fica no estado "playing: true" mas pausado visualmente
+      });
+    }
+  }, []);
+
   return (
     <div className="flex items-center gap-2 mb-4">
-      <audio ref={audioRef} src={songUrl} loop />
-      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={toggle}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-border/50 text-xs font-medium w-full transition-colors hover:bg-surface-hover">
-        {playing ? <Volume2 className="h-3.5 w-3.5 text-primary" /> : <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />}
+      <audio ref={audioRef} src={songUrl} loop autoPlay /> {/* autoPlay adicionado */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={toggle}
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-border/50 text-xs font-medium w-full transition-colors hover:bg-surface-hover"
+      >
+        {playing ? (
+          <Volume2 className="h-3.5 w-3.5 text-primary" />
+        ) : (
+          <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
+        )}
         <Music className="h-3 w-3 text-muted-foreground" />
-        <span className="text-muted-foreground truncate flex-1 text-left">{playing ? "Tocando..." : "Tocar música"}</span>
+        <span className="text-muted-foreground truncate flex-1 text-left">
+          {playing ? "Tocando..." : "Tocar música"}
+        </span>
         {playing && (
           <div className="flex items-end gap-[2px] h-3">
-            {[0, 1, 2].map(i => (
-              <motion.div key={i} className="w-[2px] bg-primary rounded-full"
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-[2px] bg-primary rounded-full"
                 animate={{ height: ["4px", "12px", "4px"] }}
-                transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }} />
+                transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+              />
             ))}
           </div>
         )}
@@ -126,7 +149,6 @@ const ProfileInfo = ({ profile }: { profile: ProfileData }) => (
       <h2 className="text-xl font-bold text-foreground">{profile.displayName}</h2>
       {profile.isVerified && <VerifiedBadge />}
     </div>
-    <p className="text-sm text-muted-foreground font-mono">@{profile.username}</p>
     {profile.bio && (
       <p className="text-sm text-secondary-foreground/80 leading-relaxed pt-1">{profile.bio}</p>
     )}
@@ -134,8 +156,12 @@ const ProfileInfo = ({ profile }: { profile: ProfileData }) => (
 );
 
 const DiscordButton = ({ discordTag, copied, copyDiscord }: { discordTag: string; copied: boolean; copyDiscord: () => void }) => (
-  <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={copyDiscord}
-    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[hsl(235,86%,65%)]/10 border border-[hsl(235,86%,65%)]/20 text-sm font-medium mb-4 transition-all hover:bg-[hsl(235,86%,65%)]/20">
+  <motion.button
+    whileHover={{ scale: 1.01 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={copyDiscord}
+    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[hsl(235,86%,65%)]/10 border border-[hsl(235,86%,65%)]/20 text-sm font-medium mb-4 transition-all hover:bg-[hsl(235,86%,65%)]/20"
+  >
     <MessageCircle className="h-4 w-4 text-[hsl(235,86%,65%)]" />
     <span className="flex-1 text-left">{copied ? "Copiado!" : discordTag}</span>
     <Copy className="h-3 w-3 text-muted-foreground" />
@@ -145,8 +171,12 @@ const DiscordButton = ({ discordTag, copied, copyDiscord }: { discordTag: string
 const BadgesRow = ({ badges }: { badges: BadgeData[] }) => (
   <div className="flex flex-wrap gap-1.5 mb-4">
     {badges.map((badge) => (
-      <motion.div key={badge.id} whileHover={{ scale: 1.15, y: -2 }} title={badge.name}
-        className="p-1.5 rounded-lg bg-surface border border-border/50 cursor-default">
+      <motion.div
+        key={badge.id}
+        whileHover={{ scale: 1.15, y: -2 }}
+        title={badge.name}
+        className="p-1.5 rounded-lg bg-surface border border-border/50 cursor-default"
+      >
         <BadgeIcon icon={badge.icon} color={badge.color} size={16} />
       </motion.div>
     ))}
@@ -156,34 +186,44 @@ const BadgesRow = ({ badges }: { badges: BadgeData[] }) => (
 const LinksSection = ({ links }: { links: ProfileLink[] }) => (
   <div className="space-y-2">
     {links.map((link, i) => (
-      <motion.div key={link.url + i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 * i }}>
-        <SocialLink label={link.label} url={link.url} icon={iconMap[link.icon || ""] || <Globe className="h-4 w-4" />} />
+      <motion.div
+        key={link.url + i}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.1 * i }}
+      >
+        <SocialLink
+          label={link.label}
+          url={link.url}
+          icon={iconMap[link.icon || ""] || <Globe className="h-4 w-4" />}
+        />
       </motion.div>
     ))}
   </div>
 );
 
-// Wide card content (used by all templates)
+// CLASSIC
 const CardContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; copied: boolean; copyDiscord: () => void }) => (
   <div className="relative glass rounded-2xl overflow-hidden w-full max-w-2xl mx-auto" style={{ backdropFilter: "blur(20px)" }}>
     <ProfileEffect effect={profile.profileEffect || "none"} />
     
-    {/* Banner */}
-    <div className="relative h-28 overflow-hidden">
+    <div className="relative h-48 overflow-hidden">
       {profile.banner ? (
         <img src={profile.banner} alt="Banner" className="w-full h-full object-cover" />
       ) : (
         <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/80" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-card/30" />
     </div>
 
-    {/* Content */}
-    <div className="relative px-6 pb-6 -mt-10">
+    <div className="relative px-6 pb-6 -mt-16">
       <div className="flex items-end gap-4 mb-4">
         <div className="relative">
-          <img src={profile.avatar} alt={profile.displayName}
-            className="h-20 w-20 rounded-full border-4 border-card object-cover" />
+          <img
+            src={profile.avatar}
+            alt={profile.displayName}
+            className="h-20 w-20 rounded-full border-4 border-card object-cover"
+          />
           <div className="absolute -bottom-1 -right-1">
             <StatusIndicator status={profile.status} size="lg" />
           </div>
@@ -212,72 +252,106 @@ const CardContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; c
   </div>
 );
 
-// Minimal template
-const MinimalContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; copied: boolean; copyDiscord: () => void }) => (
-  <div className="relative glass rounded-2xl overflow-hidden w-full max-w-lg mx-auto p-8 text-center">
-    <ProfileEffect effect={profile.profileEffect || "none"} />
-    <img src={profile.avatar} alt={profile.displayName}
-      className="h-20 w-20 rounded-full border-2 border-border mx-auto mb-4 object-cover" />
-    <div className="space-y-1 mb-4">
-      <div className="flex items-center justify-center gap-2">
-        <h2 className="text-xl font-bold text-foreground">{profile.displayName}</h2>
-        {profile.isVerified && <VerifiedBadge />}
-      </div>
-      <p className="text-sm text-muted-foreground font-mono">@{profile.username}</p>
-      {profile.bio && <p className="text-sm text-secondary-foreground/80 leading-relaxed pt-1">{profile.bio}</p>}
-    </div>
-    {profile.songUrl && <MusicPlayer songUrl={profile.songUrl} />}
-    {(profile.showBadges !== false) && profile.badges && profile.badges.length > 0 && (
-      <div className="flex flex-wrap justify-center gap-1.5 mb-4">
-        {profile.badges.map(b => (
-          <motion.div key={b.id} whileHover={{ scale: 1.15 }} title={b.name}
-            className="p-1.5 rounded-lg bg-surface border border-border/50"><BadgeIcon icon={b.icon} color={b.color} size={16} /></motion.div>
-        ))}
-      </div>
-    )}
-    {(profile.showDiscord !== false) && profile.discordTag && <DiscordButton discordTag={profile.discordTag} copied={copied} copyDiscord={copyDiscord} />}
-    <LinksSection links={profile.links} />
-    {(profile.showViews !== false) && <p className="text-xs text-muted-foreground mt-4">{profile.views.toLocaleString()} views</p>}
-  </div>
-);
-
-// Cyberpunk template
+// CYBERPUNK
 const CyberpunkContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; copied: boolean; copyDiscord: () => void }) => (
-  <div className="relative rounded-2xl overflow-hidden w-full max-w-2xl mx-auto"
-    style={{ boxShadow: "0 0 30px hsl(270 100% 65% / 0.3), inset 0 0 30px hsl(270 100% 65% / 0.05)" }}>
+  <div
+    className="relative rounded-2xl overflow-hidden w-full max-w-2xl mx-auto"
+    style={{ boxShadow: "0 0 30px hsl(270 100% 65% / 0.3), inset 0 0 30px hsl(270 100% 65% / 0.05)" }}
+  >
     <ProfileEffect effect={profile.profileEffect || "none"} />
-    <div className="h-28 relative overflow-hidden">
+    <div className="h-48 relative overflow-hidden">
       {profile.banner ? (
-        <img src={profile.banner} alt="Banner" className="w-full h-full object-cover" style={{ filter: "hue-rotate(20deg) saturate(1.5)" }} />
+        <img
+          src={profile.banner}
+          alt="Banner"
+          className="w-full h-full object-cover"
+          style={{ filter: "hue-rotate(20deg) saturate(1.5)" }}
+        />
       ) : (
-        <div className="w-full h-full bg-gradient-to-r from-primary via-accent to-primary animate-gradient-shift" style={{ backgroundSize: "200% 200%" }} />
+        <div
+          className="w-full h-full bg-gradient-to-r from-primary via-accent to-primary animate-gradient-shift"
+          style={{ backgroundSize: "200% 200%" }}
+        />
       )}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card" />
-      <div className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono rounded bg-primary/20 border border-primary/40 text-primary">safirahost.xyz</div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-card/25" />
+      <div className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono rounded bg-primary/20 border border-primary/40 text-primary">
+        safirahost.xyz
+      </div>
     </div>
     <div className="bg-card/90 backdrop-blur-xl border-t border-primary/30 px-6 pb-6">
-      <div className="flex items-end gap-4 -mt-10 mb-4">
+      <div className="flex items-end gap-4 -mt-16 mb-4">
         <div className="relative">
-          <img src={profile.avatar} alt={profile.displayName}
+          <img
+            src={profile.avatar}
+            alt={profile.displayName}
             className="h-20 w-20 rounded-lg border-2 border-primary/50 object-cover"
-            style={{ boxShadow: "0 0 15px hsl(270 100% 65% / 0.3)" }} />
-          <div className="absolute -bottom-1 -right-1"><StatusIndicator status={profile.status} size="lg" /></div>
+            style={{ boxShadow: "0 0 15px hsl(270 100% 65% / 0.3)" }}
+          />
+          <div className="absolute -bottom-1 -right-1">
+            <StatusIndicator status={profile.status} size="lg" />
+          </div>
         </div>
         <div className="pb-1">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-foreground">{profile.displayName}</h2>
             {profile.isVerified && <VerifiedBadge />}
           </div>
-          <p className="text-xs text-primary font-mono">@{profile.username}</p>
         </div>
       </div>
       {profile.bio && <p className="text-sm text-muted-foreground mb-4 border-l-2 border-primary/40 pl-3">{profile.bio}</p>}
       {profile.songUrl && <MusicPlayer songUrl={profile.songUrl} />}
-      {(profile.showBadges !== false) && profile.badges && profile.badges.length > 0 && <BadgesRow badges={profile.badges} />}
-      {(profile.showDiscord !== false) && profile.discordTag && <DiscordButton discordTag={profile.discordTag} copied={copied} copyDiscord={copyDiscord} />}
+      {(profile.showBadges !== false) && profile.badges && profile.badges.length > 0 && (
+        <BadgesRow badges={profile.badges} />
+      )}
+      {(profile.showDiscord !== false) && profile.discordTag && (
+        <DiscordButton discordTag={profile.discordTag} copied={copied} copyDiscord={copyDiscord} />
+      )}
       <LinksSection links={profile.links} />
-      {(profile.showViews !== false) && <p className="text-center text-xs text-muted-foreground mt-4 font-mono">{profile.views.toLocaleString()} views</p>}
+      {(profile.showViews !== false) && (
+        <p className="text-center text-xs text-muted-foreground mt-4 font-mono">{profile.views.toLocaleString()} views</p>
+      )}
     </div>
+  </div>
+);
+
+// MINIMAL
+const MinimalContent = ({ profile, copied, copyDiscord }: { profile: ProfileData; copied: boolean; copyDiscord: () => void }) => (
+  <div className="relative glass rounded-2xl overflow-hidden w-full max-w-lg mx-auto p-8 text-center">
+    <ProfileEffect effect={profile.profileEffect || "none"} />
+    <img
+      src={profile.avatar}
+      alt={profile.displayName}
+      className="h-20 w-20 rounded-full border-2 border-border mx-auto mb-4 object-cover"
+    />
+    <div className="space-y-1 mb-4">
+      <div className="flex items-center justify-center gap-2">
+        <h2 className="text-xl font-bold text-foreground">{profile.displayName}</h2>
+        {profile.isVerified && <VerifiedBadge />}
+      </div>
+      {profile.bio && <p className="text-sm text-secondary-foreground/80 leading-relaxed pt-1">{profile.bio}</p>}
+    </div>
+    {profile.songUrl && <MusicPlayer songUrl={profile.songUrl} />}
+    {(profile.showBadges !== false) && profile.badges && profile.badges.length > 0 && (
+      <div className="flex flex-wrap justify-center gap-1.5 mb-4">
+        {profile.badges.map((b) => (
+          <motion.div
+            key={b.id}
+            whileHover={{ scale: 1.15 }}
+            title={b.name}
+            className="p-1.5 rounded-lg bg-surface border border-border/50"
+          >
+            <BadgeIcon icon={b.icon} color={b.color} size={16} />
+          </motion.div>
+        ))}
+      </div>
+    )}
+    {(profile.showDiscord !== false) && profile.discordTag && (
+      <DiscordButton discordTag={profile.discordTag} copied={copied} copyDiscord={copyDiscord} />
+    )}
+    <LinksSection links={profile.links} />
+    {(profile.showViews !== false) && (
+      <p className="text-xs text-muted-foreground mt-4">{profile.views.toLocaleString()} views</p>
+    )}
   </div>
 );
 

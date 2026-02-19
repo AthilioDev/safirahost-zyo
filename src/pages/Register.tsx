@@ -33,8 +33,10 @@ const Register = () => {
     <div className="min-h-screen animated-gradient-bg flex items-center justify-center p-4">
       <div className="absolute top-6 left-6">
         <Link to="/" className="flex items-center gap-2">
-          <Gem className="h-5 w-5 text-primary" />
-          <span className="font-bold gradient-text">Safira</span>
+          <Gem className="h-5 w-5" style={{ color: "rgb(249 115 22)" }} />
+          <span className="font-bold" style={{ background: "linear-gradient(90deg, rgb(249 115 22), rgb(251 191 36))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            Safira
+          </span>
         </Link>
       </div>
 
@@ -59,7 +61,8 @@ const Register = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                 required
-                className="flex-1 px-3 py-2.5 rounded-r-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="flex-1 px-3 py-2.5 rounded-r-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2"
+                style={{ focusRingColor: "rgb(249 115 22 / 0.5)" }}
                 placeholder="yourname"
               />
             </div>
@@ -71,7 +74,8 @@ const Register = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2"
+              style={{ focusRingColor: "rgb(249 115 22 / 0.5)" }}
               placeholder="you@example.com"
             />
           </div>
@@ -83,7 +87,8 @@ const Register = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 pr-10"
+                className="w-full px-3 py-2.5 rounded-lg bg-surface border border-border text-sm focus:outline-none focus:ring-2 pr-10"
+                style={{ focusRingColor: "rgb(249 115 22 / 0.5)" }}
                 placeholder="Min. 6 characters"
               />
               <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -97,7 +102,8 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full py-2.5 rounded-lg text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+            style={{ backgroundColor: "rgb(249 115 22)" }}
           >
             {loading ? "Criando..." : "Criar Conta"}
           </button>
@@ -105,7 +111,7 @@ const Register = () => {
 
         <p className="text-center text-sm text-muted-foreground">
           Já tem conta?{" "}
-          <Link to="/login" className="text-primary hover:underline">Entrar</Link>
+          <Link to="/login" className="hover:underline" style={{ color: "rgb(249 115 22)" }}>Entrar</Link>
         </p>
       </motion.div>
     </div>
