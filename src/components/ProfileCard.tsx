@@ -84,7 +84,7 @@ const useTilt = () => {
   return { ref, style, handleMouseMove, handleMouseLeave };
 };
 
-// Music player
+// Music player — laranja RGB quando tocando
 const MusicPlayer = ({ songUrl }: { songUrl: string }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(true);
@@ -112,15 +112,36 @@ const MusicPlayer = ({ songUrl }: { songUrl: string }) => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggle}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-border/50 text-xs font-medium w-full transition-colors hover:bg-surface-hover"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium w-full transition-colors"
+        style={
+          playing
+            ? {
+                background: "rgba(249, 115, 22, 0.10)",
+                borderColor: "rgba(249, 115, 22, 0.30)",
+              }
+            : undefined
+        }
       >
         {playing ? (
-          <Volume2 className="h-3.5 w-3.5 text-primary" />
+          <Volume2
+            className="h-3.5 w-3.5"
+            style={{ color: "rgb(249, 115, 22)" }}
+          />
         ) : (
           <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
         )}
-        <Music className="h-3 w-3 text-muted-foreground" />
-        <span className="text-muted-foreground truncate flex-1 text-left">
+        <Music
+          className="h-3 w-3"
+          style={playing ? { color: "rgb(249, 115, 22)" } : undefined}
+        />
+        <span
+          className="truncate flex-1 text-left"
+          style={
+            playing
+              ? { color: "rgb(249, 115, 22)" }
+              : { color: "var(--muted-foreground)" }
+          }
+        >
           {playing ? "Tocando..." : "Tocar música"}
         </span>
         {playing && (
@@ -128,7 +149,8 @@ const MusicPlayer = ({ songUrl }: { songUrl: string }) => {
             {[0, 1, 2].map((i) => (
               <motion.div
                 key={i}
-                className="w-[2px] bg-primary rounded-full"
+                className="w-[2px] rounded-full"
+                style={{ backgroundColor: "rgb(249, 115, 22)" }}
                 animate={{ height: ["4px", "12px", "4px"] }}
                 transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
               />
@@ -216,14 +238,13 @@ const BannerSection = ({ profile }: { profile: ProfileData }) => {
     <div className="relative h-48 overflow-hidden">
       {profile.banner ? (
         <>
-          {/* Imagem de fundo com blur */}
           <img
             src={profile.banner}
             alt="Banner"
             className="w-full h-full object-cover"
             style={{
               filter: blurValue > 0 ? `blur(${blurValue}px)` : "none",
-              transform: blurValue > 0 ? "scale(1.08)" : "scale(1)", // evita bordas brancas no blur
+              transform: blurValue > 0 ? "scale(1.08)" : "scale(1)",
               transition: "filter 0.3s, transform 0.3s",
             }}
           />
